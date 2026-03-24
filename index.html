@@ -1,0 +1,709 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClearEar | Earwax Removal & Ear Health in Ledbury</title>
+  <meta name="description" content="Gentle earwax removal and ear health checks in Ledbury. NHS-trained clinicians, clear pricing, and same-day appointments." />
+  <link rel="icon" href="/favicon.ico" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Leaflet JS lazy -->
+  <script id="leaflet-lib" data-src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Calendar (Flatpickr) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    .tab-active { border-bottom: 2px solid rgb(13 148 136); color: rgb(13 148 136); }
+    .nav-link { position: relative; padding-bottom: 4px; }
+    .nav-link.active { color: rgb(13 148 136); }
+    .nav-link.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: rgb(13 148 136); border-radius: 2px; }
+    .modal-open { overflow: hidden; }
+  </style>
+
+  <link rel="canonical" href="https://genuine-ganache-8554b1.netlify.app/" />
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+  <meta name="theme-color" content="#0f766e" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="ClearEar | Earwax Removal & Ear Health in Ledbury" />
+  <meta property="og:description" content="Gentle earwax removal and ear health checks by NHS-trained clinicians. Clear prices, same-day appointments." />
+  <meta property="og:image" content="https://images.unsplash.com/photo-1601582585289-54da3c5b9a0b?q=80&w=1200&auto=format&fit=crop" />
+  <meta property="og:url" content="https://genuine-ganache-8554b1.netlify.app/" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ClearEar | Earwax Removal & Ear Health in Ledbury" />
+  <meta name="twitter:description" content="Gentle earwax removal and ear health checks. Clear prices, same-day appointments." />
+  <meta name="twitter:image" content="https://images.unsplash.com/photo-1601582585289-54da3c5b9a0b?q=80&w=1200&auto=format&fit=crop" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MedicalClinic",
+    "name": "ClearEar Health & Wellness",
+    "url": "https://genuine-ganache-8554b1.netlify.app/",
+    "logo": "https://genuine-ganache-8554b1.netlify.app/clearear-round-logo.png",
+    "image": "https://images.unsplash.com/photo-1601582585289-54da3c5b9a0b?q=80&w=1200&auto=format&fit=crop",
+    "telephone": "+44 7475 166498",
+    "email": "hello@clearear.co.uk",
+    "description": "Gentle earwax removal and ear health checks in Ledbury by NHS-trained clinicians using microsuction and irrigation.",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "123 High Street",
+      "addressLocality": "Ledbury",
+      "postalCode": "AB1 2CD",
+      "addressCountry": "GB"
+    },
+    "priceRange": "££",
+    "sameAs": []
+  }
+  </script>
+
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+  <link rel="icon" href="./favicon.ico">
+  <meta property="og:image" content="./og-image.png" />
+  <meta name="twitter:image" content="./og-image.png" />
+</head>
+<body class="bg-white text-slate-800">
+  <a href="#home" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-white border rounded px-3 py-2">Skip to content</a>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="#home" class="flex items-center gap-2" aria-label="ClearEar home">
+        <img referrerpolicy="no-referrer" src="./clearear-logo.png" class="h-9 w-9 rounded-full" alt="ClearEar Health & Wellness logo">
+        <span class="font-semibold tracking-tight text-lg">ClearEar</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+        <a href="#services" class="nav-link hover:text-slate-900">Services</a>
+        <a href="#pricing" class="nav-link hover:text-slate-900">Pricing</a>
+        <a href="#about" class="nav-link hover:text-slate-900">About</a>
+        <a href="#faq" class="nav-link hover:text-slate-900">FAQ</a>
+        <a href="#account" class="nav-link hover:text-slate-900">Account</a>
+        <a href="#contact" class="book-appointment px-4 py-2 bg-teal-600 text-white rounded-xl shadow hover:bg-teal-700" role="button">Book appointment</a>
+      </nav>
+      <button id="btn-mobile-menu" class="md:hidden inline-flex items-center justify-center p-2 rounded-lg border text-slate-700 hover:bg-slate-50"
+        aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+        <svg width="24" height="24" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+    <nav id="mobile-menu" class="md:hidden hidden border-t border-slate-200 bg-white">
+      <div class="max-w-6xl mx-auto px-4 py-3 grid gap-3 text-sm font-medium">
+        <a href="#services" class="py-2">Services</a>
+        <a href="#pricing" class="py-2">Pricing</a>
+        <a href="#about" class="py-2">About</a>
+        <a href="#faq" class="py-2">FAQ</a>
+        <a href="#account" class="py-2">Account</a>
+        <button class="book-appointment py-2 rounded-xl bg-teal-600 text-white text-center">Book appointment</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section id="home" class="relative">
+    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1601582585289-54da3c5b9a0b?q=80&w=2400&auto=format&fit=crop')] bg-cover bg-center opacity-30"></div>
+    <div class="max-w-6xl mx-auto px-4 py-24 relative grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <h1 class="text-5xl font-extrabold tracking-tight text-slate-900">Hear clearly. Feel better.</h1>
+        <p class="mt-4 text-lg text-slate-700">Gentle earwax removal and ear health checks, with appointments that fit your day. Always carried out by clinicians you can trust.</p>
+        <div class="mt-6 flex gap-3">
+          <button class="book-appointment px-5 py-3 bg-teal-600 text-white rounded-xl shadow hover:bg-teal-700">Book appointment</button>
+          <a href="#services" class="px-5 py-3 border rounded-xl hover:bg-slate-50">View services</a>
+        </div>
+        <p class="mt-4 text-sm text-slate-600">NHS-trained clinicians • Microsuction • Same-day availability</p>
+      </div>
+      <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-3xl shadow p-6">
+        <h3 class="font-semibold">Why ClearEar?</h3>
+        <ul class="mt-3 space-y-2 text-slate-700 text-sm">
+          <li>✅ Modern microsuction, never syringing</li>
+          <li>✅ Fast, comfortable appointments</li>
+          <li>✅ Up-front pricing and aftercare included</li>
+          <li>✅ Straightforward advice when you need it</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section id="services" class="py-20">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-3xl font-bold">Services</h2>
+          <p class="mt-1 text-slate-600">Every visit includes a brief ear health check and aftercare advice.</p>
+        </div>
+        <button class="book-appointment hidden md:inline-flex px-4 py-2 bg-teal-600 text-white rounded-xl shadow">Book appointment</button>
+      </div>
+      <div class="mt-10 grid md:grid-cols-3 gap-6">
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+          <h3 class="text-lg font-semibold">Microsuction earwax removal</h3>
+          <p class="mt-2 text-slate-600">Precise wax removal using gentle suction — the gold-standard treatment.</p>
+          <p class="mt-4 text-sm text-slate-500" aria-label="Approximate duration">⏱️ 30 mins</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+          <h3 class="text-lg font-semibold">Irrigation earwax removal</h3>
+          <p class="mt-2 text-slate-600">Warm water irrigation when appropriate, following assessment.</p>
+          <p class="mt-4 text-sm text-slate-500" aria-label="Approximate duration">⏱️ 30 mins</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+          <h3 class="text-lg font-semibold">Ear health check</h3>
+          <p class="mt-2 text-slate-600">Video otoscopy and advice if removal isn’t needed.</p>
+          <p class="mt-4 text-sm text-slate-500" aria-label="Approximate duration">⏱️ 15 mins</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="py-20 bg-slate-50">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl font-bold">Pricing</h2>
+      <p class="mt-1 text-slate-600">Clear, all-inclusive prices. You only pay per appointment.</p>
+      <div class="mt-10 grid md:grid-cols-3 gap-6 items-stretch">
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+          <h3 class="text-lg font-semibold">Ear wax removal</h3>
+          <p class="mt-1 text-slate-600">Microsuction or irrigation after assessment</p>
+          <div class="mt-4 text-4xl font-extrabold">£<span data-price="removal">65</span></div>
+          <ul class="mt-4 space-y-2 text-slate-700 text-sm">
+            <li>✅ Before and after images</li>
+            <li>✅ Aftercare advice</li>
+          </ul>
+          <button class="book-appointment mt-6 inline-block px-4 py-2 bg-teal-600 text-white rounded-xl">Book appointment</button>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+          <h3 class="text-lg font-semibold">Ear health check</h3>
+          <p class="mt-1 text-slate-600">Video otoscopy and advice</p>
+          <div class="mt-4 text-4xl font-extrabold">£<span data-price="check">25</span></div>
+          <ul class="mt-4 space-y-2 text-slate-700 text-sm">
+            <li>✅ Referral if needed</li>
+          </ul>
+          <button class="book-appointment mt-6 inline-block px-4 py-2 bg-teal-600 text-white rounded-xl">Book appointment</button>
+        </div>
+        <div class="bg-teal-700 text-white rounded-3xl p-6 shadow-sm">
+          <h3 class="text-lg font-semibold">Home visit (multiple patients)</h3>
+          <p class="mt-1 opacity-90">Lower cost when seeing more than one person at the same address</p>
+          <div class="mt-4 text-4xl font-extrabold">From £<span data-price="home_from">50</span> per person</div>
+          <ul class="mt-4 space-y-2 text-sm">
+            <li>✅ Priced on enquiry</li>
+          </ul>
+          <button class="book-appointment mt-6 inline-block px-4 py-2 bg-white text-teal-700 rounded-xl">Enquire</button>
+        </div>
+      </div>
+      <p class="mt-6 text-sm text-slate-500">
+        Typical clinic prices in the region range from £50–£80 per appointment. If there’s no wax to remove after assessment, a £<span data-price-ref="check">25</span> consultation fee applies.
+      </p>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="py-20">
+    <div class="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <h2 class="text-3xl font-bold">About ClearEar</h2>
+        <p class="mt-3 text-slate-600">We’re a small team of NHS-trained clinicians dedicated to ear health. We use video otoscopy and hospital-grade equipment. We keep things simple and take the time to answer your questions.</p>
+        <ul class="mt-4 space-y-2 text-slate-700">
+          <li>✔ Experienced, HCPC-registered clinicians</li>
+          <li>✔ Same-day and evening availability</li>
+          <li>✔ Clear aftercare and follow-up</li>
+        </ul>
+      </div>
+      <div class="rounded-3xl overflow-hidden shadow">
+        <img referrerpolicy="no-referrer" src="./about-photo.jpg" alt="Clinician using magnification for ear care" width="1600" height="1067" class="w-full h-full object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='./clearear-logo.png';">
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials" class="py-20 bg-slate-50">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl font-bold">What clients say</h2>
+      <div class="mt-8 grid md:grid-cols-3 gap-6">
+        <blockquote class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm text-slate-700">“Could hear properly again in minutes. Friendly team and clear advice.”<footer class="mt-4 text-sm text-slate-500">– Sam</footer></blockquote>
+        <blockquote class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm text-slate-700">“The video images were helpful and the treatment was comfortable.”<footer class="mt-4 text-sm text-slate-500">– Aisha</footer></blockquote>
+        <blockquote class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm text-slate-700">“Booked same day. Pricing was clear and the clinic was spotless.”<footer class="mt-4 text-sm text-slate-500">– Daniel</footer></blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="py-20">
+    <div class="max-w-3xl mx-auto px-4">
+      <h2 class="text-3xl font-bold">FAQ</h2>
+      <div class="mt-6 space-y-3">
+        <details class="group border border-slate-200 rounded-2xl p-4 bg-white">
+          <summary class="cursor-pointer font-medium flex items-center justify-between">Is microsuction safe?<span class="text-slate-400 group-open:rotate-180 transition">⌃</span></summary>
+          <p class="mt-2 text-slate-700">Yes. Microsuction is safe and gentle when performed by trained clinicians. We use magnification and sterile suction equipment.</p>
+        </details>
+        <details class="group border border-slate-200 rounded-2xl p-4 bg-white">
+          <summary class="cursor-pointer font-medium flex items-center justify-between">Does it hurt?<span class="text-slate-400 group-open:rotate-180 transition">⌃</span></summary>
+          <p class="mt-2 text-slate-700">It shouldn’t. You may feel gentle suction or brief pressure. Tell us if anything is uncomfortable and we’ll pause.</p>
+        </details>
+        <details class="group border border-slate-200 rounded-2xl p-4 bg-white">
+          <summary class="cursor-pointer font-medium flex items-center justify-between">Do I need to use drops beforehand?<span class="text-slate-400 group-open:rotate-180 transition">⌃</span></summary>
+          <p class="mt-2 text-slate-700">Not always. If the wax is hard or compacted, we may suggest using drops for a few days first.</p>
+        </details>
+        <details class="group border border-slate-200 rounded-2xl p-4 bg-white">
+          <summary class="cursor-pointer font-medium flex items-center justify-between">What if there’s no wax to remove?<span class="text-slate-400 group-open:rotate-180 transition">⌃</span></summary>
+          <p class="mt-2 text-slate-700">We’ll examine and advise. If no wax removal is needed, we charge a £<span data-price-ref="check">25</span> assessment fee.</p>
+        </details>
+        <details class="group border border-slate-200 rounded-2xl p-4 bg-white">
+          <summary class="cursor-pointer font-medium flex items-center justify-between">Can children be treated?<span class="text-slate-400 group-open:rotate-180 transition">⌃</span></summary>
+          <p class="mt-2 text-slate-700">Yes, depending on age and cooperation. We’ll advise on the best approach for your child.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Account -->
+  <section id="account" class="py-20 bg-slate-50">
+    <div class="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-start">
+      <div>
+        <h2 class="text-3xl font-bold">Your account</h2>
+        <p class="mt-2 text-slate-600">Create an account to save your details and address for faster booking. Uses <strong>Supabase</strong> for secure sign-in.</p>
+        <div id="auth-card" class="mt-6 bg-white border border-slate-200 rounded-3xl shadow" aria-live="polite">
+          <div class="px-6 pt-4 border-b border-slate-200 flex gap-6 text-sm">
+            <button type="button" id="tab-signin" class="py-2 tab-active">Sign in</button>
+            <button type="button" id="tab-signup" class="py-2 text-slate-500">Create account</button>
+          </div>
+          <div class="p-6">
+            <!-- Sign in -->
+            <div id="panel-signin">
+              <label class="block"><span class="text-sm">Email</span><input id="signin-email" type="email" placeholder="you@example.com" class="mt-1 w-full rounded-xl border px-3 py-2" autocomplete="email" required></label>
+              <label class="block mt-4"><span class="text-sm">Password</span><div class="relative"><input id="signin-password" type="password" placeholder="Password" class="mt-1 w-full rounded-xl border px-3 py-2 pr-12" autocomplete="current-password" required><button type="button" data-toggle="signin-password" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs border px-2 py-1 rounded-lg">Show</button></div></label>
+              <div class="flex flex-wrap gap-3 mt-4"><button type="button" id="btn-signin" class="px-4 py-2 bg-teal-600 text-white rounded-xl">Sign in</button><button type="button" id="btn-magic" class="px-4 py-2 border rounded-xl">Send magic link</button><button type="button" id="btn-reset" class="text-sm underline">Forgot password?</button></div>
+              <p id="auth-status" class="mt-3 text-sm text-slate-700" role="status" aria-live="polite">Not signed in</p>
+            </div>
+            <!-- Sign up -->
+            <div id="panel-signup" class="hidden">
+              <label class="block"><span class="text-sm">Email</span><input id="signup-email" type="email" placeholder="you@example.com" class="mt-1 w-full rounded-xl border px-3 py-2" autocomplete="email" required></label>
+              <label class="block mt-4"><span class="text-sm">Password</span><div class="relative"><input id="signup-password" type="password" placeholder="Create a password" class="mt-1 w-full rounded-xl border px-3 py-2 pr-12" autocomplete="new-password" required><button type="button" data-toggle="signup-password" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs border px-2 py-1 rounded-lg">Show</button></div></label>
+              <label class="block mt-4"><span class="text-sm">Full name (optional)</span><input id="signup-name" type="text" placeholder="Your name" class="mt-1 w-full rounded-xl border px-3 py-2" autocomplete="name"></label>
+              <div class="flex flex-wrap gap-3 mt-4"><button type="button" id="btn-signup" class="px-4 py-2 bg-teal-600 text-white rounded-xl">Create account</button></div>
+              <p class="mt-2 text-xs text-slate-500">We’ll send a confirmation email. After you confirm, come back and sign in.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold">Saved details</h3>
+        <p class="mt-1 text-slate-600">Your address helps us reach you in Ledbury and nearby.</p>
+        <form id="details-form" class="mt-4 bg-white border border-slate-200 rounded-3xl p-6 shadow" novalidate>
+          <!-- Honeypot field -->
+          <input type="text" name="company" class="hidden" tabindex="-1" autocomplete="organization" aria-hidden="true">
+          <div class="grid md:grid-cols-2 gap-4">
+            <label class="block"><span class="text-sm">Full name</span><input id="acc-name" type="text" class="mt-1 w-full rounded-xl border px-3 py-2" autocomplete="name" required></label>
+            <label class="block"><span class="text-sm">Town/City</span><input id="acc-town" type="text" value="Ledbury" class="mt-1 w-full rounded-xl border px-3 py-2" autocomplete="address-level2"></label>
+            <label class="block"><span class="text-sm">Address line 1</span><input id="acc-address1" type="text" class="mt-1 w-full rounded-xl border px-3 py-2" autocomplete="address-line1" required></label>
+            <label class="block"><span class="text-sm">Address line 2 (optional)</span><input id="acc-address2" type="text" class="mt-1 w-full rounded-xl border px-3 py-2" autocomplete="address-line2"></label>
+            <label class="block"><span class="text-sm">Postcode</span><input id="acc-postcode" type="text" pattern="[A-Za-z]{1,2}\d[A-Za-z\d]? ?\d[A-Za-z]{2}" title="Enter a UK postcode (e.g. SW1A 1AA)" class="mt-1 w-full rounded-xl border px-3 py-2" autocomplete="postal-code" required></label>
+            <label class="block md:col-span-2"><span class="text-sm">Notes (access, parking, etc.)</span><textarea id="acc-notes" rows="3" class="mt-1 w-full rounded-xl border px-3 py-2" autocomplete="off"></textarea></label>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-3 items-center"><button id="btn-geolocate" type="button" class="px-4 py-2 bg-teal-600 text-white rounded-xl">Use my current location</button><button id="btn-save" type="button" class="px-4 py-2 border rounded-xl">Save details</button><span id="geo-status" class="text-xs text-slate-500"></span></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact / Booking -->
+  <section id="contact" class="py-20 bg-slate-50">
+    <div class="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-8 items-start">
+      <div>
+        <h2 class="text-3xl font-bold">Book an appointment</h2>
+        <p class="mt-2 text-slate-600">
+          You can book by phone, email, or by using the form. We respond quickly and will confirm a time that suits you.
+        </p>
+        <ul class="mt-6 space-y-3 text-slate-700">
+          <li>📞 <a href="tel:+447475166498" class="underline">07475 166498</a></li>
+          <li>📧 <a href="mailto:hello@clearear.co.uk" class="underline">hello@clearear.co.uk</a></li>
+          <li>📍 123 High Street, Ledbury, AB1 2CD</li>
+        </ul>
+        <div class="mt-6 rounded-2xl overflow-hidden border border-slate-200">
+          <div id="map" style="height:360px;"></div>
+        </div>
+      </div>
+
+      <form id="booking-form" class="bg-white rounded-3xl border border-slate-200 shadow p-6" novalidate>
+        <h3 class="text-xl font-semibold">Request an appointment</h3>
+        <p class="mt-1 text-slate-600">Include your preferred date and time, and a brief note about your visit.</p>
+
+        <label class="block mt-4">
+          <span class="text-sm">Preferred date & time</span>
+          <input id="appt-input" type="text" class="mt-1 w-full rounded-xl border px-3 py-2" placeholder="Select a date and time" readonly />
+        </label>
+
+        <label class="block mt-4">
+          <span class="text-sm">Full name</span>
+          <input type="text" name="name" autocomplete="name" required class="mt-1 w-full rounded-xl border px-3 py-2" placeholder="Your full name" />
+        </label>
+        <label class="block mt-4">
+          <span class="text-sm">Email address</span>
+          <input type="email" name="email" autocomplete="email" required class="mt-1 w-full rounded-xl border px-3 py-2" placeholder="you@example.com" />
+        </label>
+        <label class="block mt-4">
+          <span class="text-sm">Phone number (optional)</span>
+          <input type="tel" name="tel" inputmode="tel" autocomplete="tel" pattern="\+?[0-9][0-9\s]{7,}" title="Enter a valid phone number" class="mt-1 w-full rounded-xl border px-3 py-2" placeholder="07475 166498" />
+        </label>
+        <label class="block mt-4">
+          <span class="text-sm">Message</span>
+          <textarea rows="5" name="message" required class="mt-1 w-full rounded-xl border px-3 py-2" placeholder="Reason for visit"></textarea>
+        </label>
+        <!-- Honeypot -->
+        <input type="text" name="company" autocomplete="organization" class="hidden" tabindex="-1" aria-hidden="true">
+        <button type="button" class="mt-4 px-4 py-2 bg-teal-600 text-white rounded-xl" aria-label="Send booking request">Book appointment</button>
+        <p class="mt-3 text-xs text-slate-500">Demo form. Connect to email or a booking tool to receive messages.</p>
+        <p id="form-status" class="mt-2 text-sm text-slate-600" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Calendar Modal -->
+  <div id="calendar-modal" class="hidden fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/40" id="calendar-overlay" aria-hidden="true"></div>
+    <div role="dialog" aria-modal="true" aria-labelledby="calendar-title"
+         class="relative mx-auto mt-24 w-11/12 max-w-md rounded-2xl bg-white shadow-xl border border-slate-200 p-4">
+      <div class="flex items-center justify-between">
+        <h3 id="calendar-title" class="text-lg font-semibold">Choose a date & time</h3>
+        <button id="calendar-close" class="p-2 rounded-lg hover:bg-slate-100" aria-label="Close calendar">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="mt-3">
+        <input id="calendar-picker" type="text" class="w-full border rounded-xl px-3 py-2" aria-label="Appointment date time picker" />
+      </div>
+      <div class="mt-4 flex justify-end gap-3">
+        <button id="calendar-cancel" class="px-4 py-2 border rounded-xl">Cancel</button>
+        <button id="calendar-apply" class="px-4 py-2 bg-teal-600 text-white rounded-xl">Use this time</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="py-10 border-t border-slate-200 text-center text-sm text-slate-500">
+    <p>&copy; <span id="year"></span> ClearEar Health & Wellness</p>
+    <div class="mt-4 text-xs text-slate-400">
+      <a href="#privacy" class="underline mr-4">Privacy</a>
+      <a href="#terms" class="underline">Terms</a>
+    </div>
+  </footer>
+
+  <script>
+// ===== ClearEar App + Calendar =====
+(function () {
+  // ---------- helpers ----------
+  const $ = (sel, ctx=document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+  const byId = (id) => document.getElementById(id);
+
+  // Mobile menu toggle
+  (function(){
+    const btn = byId('btn-mobile-menu');
+    const menu = byId('mobile-menu');
+    if (!btn || !menu) return;
+    btn.addEventListener('click', () => {
+      const isOpen = !menu.classList.contains('hidden');
+      menu.classList.toggle('hidden', isOpen);
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      btn.setAttribute('aria-label', isOpen ? 'Open menu' : 'Close menu');
+    });
+  })();
+
+  // Footer year
+  const yearEl = byId('year');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  // ---------- Supabase client (unchanged) ----------
+  const SUPABASE_URL = 'https://fvcgftzcefgqfrvakvkf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2Y2dmdHpjZWZncWZydmFrdmtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4Mjk1NzQsImV4cCI6MjA3MjQwNTU3NH0.Moci0eK7mPsZdKXAgCyHgICI-d-kDtDexK-5yCkT62E';
+  const sb = window.supabase?.createClient ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+  // ---------- Auth tabs ----------
+  (function tabs(){
+    const tabSignin   = byId('tab-signin');
+    const tabSignup   = byId('tab-signup');
+    const panelSignin = byId('panel-signin');
+    const panelSignup = byId('panel-signup');
+    function switchTab(which) {
+      if (!panelSignin || !panelSignup || !tabSignin || !tabSignup) return;
+      const isSignin = which === 'signin';
+      panelSignin.classList.toggle('hidden', !isSignin);
+      panelSignup.classList.toggle('hidden', isSignin);
+      tabSignin.classList.toggle('tab-active', isSignin);
+      tabSignin.classList.toggle('text-slate-500', !isSignin);
+      tabSignup.classList.toggle('tab-active', !isSignin);
+      tabSignup.classList.toggle('text-slate-500', isSignin);
+    }
+    tabSignin?.addEventListener('click', () => switchTab('signin'));
+    tabSignup?.addEventListener('click', () => switchTab('signup'));
+  })();
+
+  // Show/hide password
+  $$("[data-toggle]").forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = byId(btn.getAttribute('data-toggle'));
+      if (!input) return;
+      const isPw = input.type === 'password';
+      input.type = isPw ? 'text' : 'password';
+      btn.textContent = isPw ? 'Hide' : 'Show';
+    });
+  });
+
+  // ---------- Session handling & profile ----------
+  const v = (id) => (byId(id)?.value ?? '').trim();
+  const setVal = (id, val) => { const el = byId(id); if (el) el.value = val ?? ''; };
+  const showAuth = (msg) => { const el = byId('auth-status'); if (el) el.textContent = msg; };
+
+  function setSignedInUI(session) {
+    const is = !!session;
+    const authCard   = byId('auth-card');
+    const btnSignout = byId('btn-signout');
+    if (authCard)   authCard.classList.toggle('hidden', is);
+    if (btnSignout) btnSignout.classList.toggle('hidden', !is);
+    showAuth(is ? `Signed in as ${session.user.email}` : 'Not signed in');
+  }
+
+  async function loadProfile(userId) {
+    if (!sb) return;
+    const { data, error } = await sb.from('profiles').select('*').eq('user_id', userId).maybeSingle();
+    if (error) { console.warn(error.message); return; }
+    if (!data) return;
+    setVal('acc-name',     data.name);
+    setVal('acc-town',     data.town);
+    setVal('acc-address1', data.address1);
+    setVal('acc-address2', data.address2);
+    setVal('acc-postcode', data.postcode);
+    setVal('acc-notes',    data.notes);
+    showAuth('Loaded your saved details.');
+  }
+
+  async function saveProfile() {
+    if (!sb) return alert('Supabase not available.');
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) return alert('Please sign in first.');
+
+    const profile = {
+      user_id:  user.id,
+      email:    user.email,
+      name:     v('acc-name'),
+      address1: v('acc-address1'),
+      address2: v('acc-address2'),
+      town:     v('acc-town'),
+      postcode: v('acc-postcode'),
+      notes:    v('acc-notes')
+    };
+
+    const local = JSON.parse(localStorage.getItem('clearear_user') || 'null');
+    if (local?.lat && local?.lng) { profile.lat = local.lat; profile.lng = local.lng; }
+
+    const { error } = await sb.from('profiles').upsert(profile).select();
+    alert(error ? error.message : 'Details saved.');
+  }
+  byId('btn-save')?.addEventListener('click', saveProfile);
+
+  byId('btn-signin')?.addEventListener('click', async () => {
+    if (!sb) return alert('Supabase not available.');
+    const email = v('signin-email');
+    const password = v('signin-password');
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) alert(error.message);
+  });
+
+  byId('btn-signup')?.addEventListener('click', async () => {
+    if (!sb) return alert('Supabase not available.');
+    const email = v('signup-email');
+    const password = v('signup-password');
+    const name = v('signup-name');
+    const { error } = await sb.auth.signUp({ email, password, options: { data: { name } } });
+    alert(error ? error.message : 'Check your email to confirm your account, then come back and sign in.');
+  });
+
+  byId('btn-signout')?.addEventListener('click', async () => { if (!sb) return; await sb.auth.signOut(); });
+
+  byId('btn-magic')?.addEventListener('click', async () => {
+    if (!sb) return alert('Supabase not available.');
+    const email = v('signin-email');
+    const { error } = await sb.auth.signInWithOtp({ email });
+    alert(error ? error.message : 'Magic link sent. Check your email.');
+  });
+
+  byId('btn-reset')?.addEventListener('click', async () => {
+    if (!sb) return alert('Supabase not available.');
+    const email = v('signin-email');
+    const redirectTo = window.location.origin + window.location.pathname + '?type=recovery';
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+    alert(error ? error.message : 'Password reset email sent.');
+  });
+
+  (async () => {
+    if (!sb) return;
+    const { data: { session } } = await sb.auth.getSession();
+    setSignedInUI(session);
+    if (session) await loadProfile(session.user.id);
+  })();
+
+  sb?.auth.onAuthStateChange?.(async (_event, session) => {
+    setSignedInUI(session);
+    if (session) await loadProfile(session.user.id);
+  });
+
+  // ---------- Geolocation (local only) ----------
+  const geoStatus = byId('geo-status');
+  byId('btn-geolocate')?.addEventListener('click', () => {
+    if (!navigator.geolocation) { if (geoStatus) geoStatus.textContent = 'Geolocation not supported on this device.'; return; }
+    if (geoStatus) geoStatus.textContent = 'Getting your location…';
+    navigator.geolocation.getCurrentPosition(pos => {
+      const { latitude, longitude } = pos.coords;
+      localStorage.setItem('clearear_user', JSON.stringify({ lat: latitude, lng: longitude }));
+      if (geoStatus) geoStatus.textContent = `Saved location (local): ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+    }, err => { if (geoStatus) geoStatus.textContent = 'Could not get location: ' + err.message; });
+  });
+
+  // ---------- Prices ----------
+  const PRICES = { removal: 65, check: 25, home_from: 50 };
+  function renderPrices() {
+    document.querySelectorAll('[data-price]').forEach(el => {
+      const key = el.getAttribute('data-price');
+      if (key in PRICES) el.textContent = PRICES[key];
+    });
+    document.querySelectorAll('[data-price-ref]').forEach(el => {
+      const key = el.getAttribute('data-price-ref');
+      if (key in PRICES) el.textContent = PRICES[key];
+    });
+  }
+  renderPrices();
+
+  // ---------- Active nav link on scroll ----------
+  (function navActive() {
+    const links = Array.from(document.querySelectorAll('a.nav-link'));
+    const map = Object.fromEntries(links.map(a => [a.getAttribute('href').slice(1), a]));
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        const id = e.target.id;
+        if (!map[id]) return;
+        if (e.isIntersecting) {
+          links.forEach(l => l.classList.remove('active'));
+          map[id].classList.add('active');
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px', threshold: 0.01 });
+    document.querySelectorAll('section[id]').forEach(sec => observer.observe(sec));
+  })();
+
+  // ---------- Lazy Leaflet map ----------
+  (function lazyMap() {
+    const section = document.querySelector('#contact');
+    if (!section) return;
+
+    const loadLeaflet = () => new Promise((resolve) => {
+      if (window.L) return resolve();
+      const s = document.getElementById('leaflet-lib');
+      const src = s?.getAttribute('data-src');
+      if (!src) return resolve();
+      const el = document.createElement('script');
+      el.src = src; el.onload = resolve; document.body.appendChild(el);
+    });
+
+    const onVisible = async () => {
+      await loadLeaflet();
+      const mapEl = document.getElementById('map');
+      if (!mapEl || !window.L) { obs.disconnect(); return; }
+      const map = L.map('map').setView([52.037, -2.424], 14);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      L.marker([52.037, -2.424]).addTo(map).bindPopup('ClearEar – Ledbury');
+      obs.disconnect();
+    };
+
+    const obs = new IntersectionObserver((entries) => {
+      if (entries.some(e => e.isIntersecting)) onVisible();
+    }, { rootMargin: '200px 0px' });
+
+    obs.observe(section);
+  })();
+
+  // ---------- Calendar modal logic ----------
+  let fp = null;
+  const modal = byId('calendar-modal');
+  const pickerInput = byId('calendar-picker');
+  const apptInput = byId('appt-input');
+  const openBtns = $$('.book-appointment');
+  const openModal = () => {
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    // Init flatpickr once
+    if (!fp && window.flatpickr) {
+      fp = flatpickr(pickerInput, {
+        enableTime: true,
+        dateFormat: 'Y-m-d H:i',
+        minDate: 'today',
+        time_24hr: true,
+        defaultDate: null,
+        inline: true
+      });
+    }
+    // Focus inside modal for a11y
+    setTimeout(() => pickerInput?.focus(), 50);
+  };
+  const closeModal = () => {
+    modal?.classList.add('hidden');
+    document.body.classList.remove('modal-open');
+  };
+
+  openBtns.forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal();
+    });
+  });
+
+  byId('calendar-overlay')?.addEventListener('click', closeModal);
+  byId('calendar-close')?.addEventListener('click', closeModal);
+  byId('calendar-cancel')?.addEventListener('click', closeModal);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  byId('calendar-apply')?.addEventListener('click', () => {
+    const sel = fp?.selectedDates?.[0];
+    if (!sel) { alert('Please choose a date and time.'); return; }
+    // Set value in the visible appointment input
+    const pad = (n) => String(n).padStart(2,'0');
+    const y = sel.getFullYear();
+    const m = pad(sel.getMonth()+1);
+    const d = pad(sel.getDate());
+    const hh = pad(sel.getHours());
+    const mm = pad(sel.getMinutes());
+    const formatted = `${y}-${m}-${d} ${hh}:${mm}`;
+    if (apptInput) apptInput.value = formatted;
+
+    closeModal();
+    // Scroll to the booking form
+    byId('booking-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Focus next field
+    setTimeout(() => document.querySelector('#booking-form [name="name"]')?.focus(), 400);
+  });
+
+})();
+  </script>
+
+  <div class="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/95 backdrop-blur border-t border-slate-200 p-3">
+    <div class="max-w-6xl mx-auto px-2 flex items-center justify-between gap-3">
+      <span class="text-sm">Need earwax removal?</span>
+      <button class="book-appointment px-4 py-2 bg-teal-600 text-white rounded-xl shadow">Book appointment</button>
+    </div>
+  </div>
+
+</body>
+</html>
