@@ -840,12 +840,13 @@
       'use strict';
 
       const STORAGE_KEY = 'worldCupDrawEntriesV2';
+      const MAX_PLAYERS = 24;
+      const SPIN_DURATION = 4800;
 
       const SUPABASE_URL = 'https://pbniajrjentafjxvbjwv.supabase.co';
       const SUPABASE_KEY = 'sb_publishable_3g7GjCZva0WWTkqvzqNgJw_y2oBVM8t';
       
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      const SPIN_DURATION = 4800;
 
       function updatePlayerCount() {
         const entries = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
