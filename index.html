@@ -863,7 +863,13 @@
         }
       }
 
-  
+      function updateSpotsLeft() {
+        const entries = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const spotsEl = document.getElementById('spotsLeft');
+        if (spotsEl) {
+          spotsEl.textContent = 'Spots Left: ' + (MAX_PLAYERS - entries.length);
+        }
+      }
 
       const topTeams = [
         { name: 'Argentina', flag: '🇦🇷' }, { name: 'France', flag: '🇫🇷' }, { name: 'England', flag: '🏴' },
