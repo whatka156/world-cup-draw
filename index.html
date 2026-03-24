@@ -942,6 +942,7 @@
       function saveEntries() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
         updatePlayerCount();
+        updatePrizePool();
       }
 
       function showToast(message) {
