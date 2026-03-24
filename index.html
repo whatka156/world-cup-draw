@@ -1128,6 +1128,12 @@
       }
 
       function showSpinStep() {
+        const entries = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        
+        if (entries.length >= MAX_PLAYERS) {
+          alert('Tournament is full');
+          return;
+        }
         const values = validateEntry();
         if (!values) return;
 
