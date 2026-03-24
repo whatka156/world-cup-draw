@@ -1180,6 +1180,7 @@
 
         const selectedIndex = randomIndex(teams.length);
         const selectedTeam = teams[selectedIndex];
+        teams.splice(selectedIndex, 1);
         resultEl.textContent = 'Spinning...';
         spinWheel(wheelEl, teams.length, selectedIndex);
 
