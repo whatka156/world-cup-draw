@@ -921,13 +921,27 @@
       els.adminBtn.addEventListener('click', () => {
         const password = prompt('Enter admin password');
       
-        if (password === '1234') {
-          alert('Admin access granted');
-        } else {
+        if (password !== '1234') {
           alert('Wrong password');
+          return;
         }
+      
+        const entries = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      
+        if (entries.length === 0) {
+          alert('No players yet');
+          return;
+        }
+      
+        let list = 'Players:\n\n';
+      
+        entries.forEach((e, i) => {
+          list += `${i + 1}. ${e.name} (${e.nickname}) - ${e.paid ? 'PAID' : 'UNPAID'}\n`;
+        });
+      
+        alert(list);
       });
-
+      
       const state = {
         name: '',
         nickname: '',
