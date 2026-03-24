@@ -925,6 +925,7 @@
 
       function saveEntries() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
+        updatePlayerCount();
       }
 
       function showToast(message) {
