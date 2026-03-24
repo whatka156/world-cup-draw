@@ -1286,8 +1286,18 @@
         trapFocus(event);
       });
       
-    function saveEntries() {
+    async function saveEntries() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
+
+      await supabase.from('players').insert([
+        {
+          name: state.name,
+          nickname: state.nickname,
+          top_team: state.topTeam.name,
+          bottom_team: state.bottomTeam.name,
+          paid: false
+        }
+      ]);
       renderEntries();
       updateSpotsLeft();
       updatePlayerCount();
