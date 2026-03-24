@@ -1,0 +1,8 @@
+{
+  "name": "World Cup Draw",
+  "short_name": "Draw",
+  "start_url": "/world-cup-draw/",
+  "display": "standalone",
+  "background_color": "#071a38",
+  "theme_color": "#071a38"
+}
