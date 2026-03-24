@@ -1280,12 +1280,14 @@
         }
         trapFocus(event);
       });
-
+      
+    function saveEntries() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
       renderEntries();
       updateSpotsLeft();
       updatePlayerCount();
       updatePrizePool();
-    })();
+    }
   </script>
 </body>
 </html>
