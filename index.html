@@ -918,6 +918,16 @@
         adminBtn: document.getElementById('adminBtn'),
       };
 
+      els.adminBtn.addEventListener('click', () => {
+        const password = prompt('Enter admin password');
+      
+        if (password === '1234') {
+          alert('Admin access granted');
+        } else {
+          alert('Wrong password');
+        }
+      });
+
       const state = {
         name: '',
         nickname: '',
