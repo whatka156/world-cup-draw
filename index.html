@@ -1038,11 +1038,6 @@
         element.dataset.rotation = String(finalRotation);
       }
 
-      function updateSpotsLeft() {
-        const remaining = Math.max(0, MAX_PLAYERS - state.entries.length);
-        els.spotCount.textContent = String(remaining);
-      }
-
       function renderEntries() {
         updateSpotsLeft();
 
