@@ -852,6 +852,16 @@
         return entries.filter(e => e.paid).length;
       }
 
+      function updatePrizePool() {
+        const paidCount = getPaidCount();
+        const prizeEl = document.getElementById('prizePool');
+        if (prizeEl) {
+          prizeEl.textContent = 'Prize Pool: £' + paidCount;
+        }
+      }
+
+  
+
       const topTeams = [
         { name: 'Argentina', flag: '🇦🇷' }, { name: 'France', flag: '🇫🇷' }, { name: 'England', flag: '🏴' },
         { name: 'Brazil', flag: '🇧🇷' }, { name: 'Portugal', flag: '🇵🇹' }, { name: 'Netherlands', flag: '🇳🇱' },
