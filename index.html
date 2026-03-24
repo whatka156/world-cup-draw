@@ -838,6 +838,14 @@
       const MAX_PLAYERS = 24;
       const SPIN_DURATION = 4800;
 
+      function updatePlayerCount() {
+        const entries = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const countEl = document.getElementById('playerCount');
+        if (countEl) {
+          countEl.textContent = 'Players Entered: ' + entries.length;
+        }
+      }
+
       const topTeams = [
         { name: 'Argentina', flag: '🇦🇷' }, { name: 'France', flag: '🇫🇷' }, { name: 'England', flag: '🏴' },
         { name: 'Brazil', flag: '🇧🇷' }, { name: 'Portugal', flag: '🇵🇹' }, { name: 'Netherlands', flag: '🇳🇱' },
