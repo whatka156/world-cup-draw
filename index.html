@@ -1,0 +1,4368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#071a38" />
+  <title>World Cup Draw</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:,">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg:#071a38;
+      --bg-2:#0b2a53;
+      --gold:#d7a74a;
+      --gold-2:#efca74;
+      --paper:#ebe8e1;
+      --paper-2:#f7f4ee;
+      --text:#091935;
+      --muted:#5f646e;
+      --success:#0f7b40;
+      --danger:#a81d1d;
+      --shadow:0 14px 36px rgba(0,0,0,.16);
+      --radius:22px;
+    }
+
+    *{box-sizing:border-box;margin:0}
+    html{scroll-behavior:smooth}
+    body{font-family:Inter,sans-serif;background:var(--bg);color:#fff;line-height:1.4;-webkit-tap-highlight-color:transparent}
+    button,input{font:inherit}
+    button{touch-action:manipulation}
+
+    .hidden{display:none !important}
+    .sr-only{
+      position:absolute;
+      width:1px;
+      height:1px;
+      padding:0;
+      margin:-1px;
+      overflow:hidden;
+      clip:rect(0,0,0,0);
+      white-space:nowrap;
+      border:0;
+    }
+
+    .hero{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:24px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(30,75,145,.35), transparent 30%),
+        linear-gradient(180deg,#04142f,#071a38 55%,#0b2a53);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero::before,
+    .hero::after{
+      content:"";
+      position:absolute;
+      top:120px;
+      width:82px;
+      height:82px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,.95) 0 18%, rgba(255,255,255,.45) 38%, rgba(255,255,255,0) 75%);
+      filter:blur(4px);
+      opacity:.9;
+    }
+
+    .hero::before{left:-8px}
+    .hero::after{right:-8px}
+
+    .hero-inner{max-width:860px;position:relative;z-index:1}
+
+    .hero-meta{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .pill,
+    .meta-chip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 18px;
+      border-radius:999px;
+      border:1px solid rgba(215,167,74,.65);
+      font-weight:700;
+      font-size:.9rem;
+      color:#f5d48f;
+      background:rgba(255,255,255,.03);
+      box-shadow:0 8px 20px rgba(0,0,0,.12);
+    }
+
+    .meta-chip{color:#fff;border-color:rgba(255,255,255,.12)}
+
+    h1{
+      font-family:Cinzel,serif;
+      font-size:clamp(2.5rem,8vw,4.9rem);
+      line-height:1.02;
+      margin-bottom:20px;
+      letter-spacing:.01em;
+      text-transform:uppercase;
+    }
+
+    .section-title{
+      font-family:Cinzel,serif;
+      font-size:clamp(2.2rem,6vw,4rem);
+      line-height:1.05;
+      color:var(--text);
+      margin-bottom:14px;
+    }
+
+    .accent{color:var(--gold);font-style:italic}
+
+    .sub{
+      font-size:1.1rem;
+      line-height:1.6;
+      opacity:.94;
+      margin-bottom:28px;
+      max-width:760px;
+      margin-inline:auto;
+    }
+
+    .buttons{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      padding:14px 22px;
+      border-radius:14px;
+      font-weight:800;
+      border:none;
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease, background-color .18s ease;
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+    .btn:active{transform:translateY(0) scale(.985)}
+    .btn:focus-visible,
+    .close-btn:focus-visible,
+    .field input:focus-visible{
+      outline:3px solid rgba(215,167,74,.45);
+      outline-offset:3px;
+    }
+
+    .primary{
+      background:linear-gradient(180deg,var(--gold-2),var(--gold));
+      color:#000;
+      box-shadow:0 10px 24px rgba(215,167,74,.24), inset 0 1px 0 rgba(255,255,255,.4);
+    }
+
+    .secondary{
+      background:#fff;
+      color:#000;
+    }
+
+    .ghost{
+      background:transparent;
+      color:var(--text);
+      border:1px solid rgba(9,25,53,.14);
+    }
+
+    .danger{
+      background:#fff1f1;
+      color:#821717;
+      border:1px solid rgba(168,29,29,.18);
+    }
+
+    .stats{
+      margin-top:30px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:22px;
+      overflow:hidden;
+      background:rgba(7,26,56,.32);
+      backdrop-filter:blur(6px);
+      box-shadow:var(--shadow);
+    }
+
+    .stat{
+      padding:22px 18px;
+      border-right:1px solid rgba(255,255,255,.09);
+    }
+
+    .stat:last-child{border-right:none}
+    .stat strong{display:block;font-size:1.5rem;margin-bottom:6px}
+    .stat span{opacity:.86;font-weight:600}
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(2,10,24,.78);
+      display:none;
+      align-items:flex-start;
+      justify-content:center;
+      overflow:auto;
+      overscroll-behavior:contain;
+      padding:24px 16px 40px;
+      z-index:100;
+      backdrop-filter:blur(5px);
+    }
+
+    .overlay.show{display:flex}
+
+    .modal{
+      width:min(1180px,100%);
+      background:var(--paper);
+      border-radius:28px;
+      padding:18px;
+      color:#1b1b1b;
+      position:relative;
+      box-shadow:0 25px 80px rgba(0,0,0,.35);
+      animation:fadeUp .18s ease;
+    }
+
+    .close-btn{
+      position:absolute;
+      top:16px;
+      right:16px;
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      border:none;
+      background:var(--text);
+      color:#fff;
+      font-size:1.2rem;
+      cursor:pointer;
+    }
+
+    .panel{
+      background:var(--paper-2);
+      border:1px solid rgba(9,25,53,.08);
+      border-radius:26px;
+      padding:28px;
+      margin-bottom:18px;
+      box-shadow:0 10px 30px rgba(9,25,53,.06);
+    }
+
+    .eyebrow{
+      color:#b68a38;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      font-weight:800;
+      font-size:.9rem;
+      margin-bottom:10px;
+      text-align:center;
+    }
+
+    .how-title,
+    .enter-title,
+    .result-title{
+      font-family:Cinzel,serif;
+      font-size:clamp(2rem,5vw,3.5rem);
+      color:var(--text);
+      text-align:center;
+      margin-bottom:26px;
+      line-height:1.04;
+    }
+
+    .steps-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:0;
+    }
+
+    .step{
+      padding:18px 22px;
+      text-align:center;
+      border-right:1px solid rgba(9,25,53,.08);
+    }
+
+    .step:last-child{border-right:none}
+
+    .step-number{
+      width:52px;
+      height:52px;
+      border-radius:50%;
+      background:#e0b859;
+      color:#1e1608;
+      display:grid;
+      place-items:center;
+      margin:0 auto 18px;
+      font-weight:800;
+      font-size:1.3rem;
+    }
+
+    .step h3{
+      font-family:Cinzel,serif;
+      font-size:1.45rem;
+      color:var(--text);
+      margin-bottom:10px;
+    }
+
+    .step p{
+      color:var(--muted);
+      line-height:1.5;
+      font-weight:600;
+      max-width:290px;
+      margin:0 auto;
+    }
+
+    .prize-grid{
+      display:grid;
+      grid-template-columns:360px 1fr;
+      gap:24px;
+      align-items:center;
+    }
+
+    .prize-visual{
+      min-height:220px;
+      border-radius:24px;
+      background:linear-gradient(180deg,#071a38,#0b234b);
+      color:#fff;
+      padding:24px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+
+    .trophy{font-size:6rem;line-height:1}
+    .pot-copy-top{color:#efc86f;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+    .pot-amount{font-size:4rem;line-height:.95;font-weight:800;color:#ffd66f}
+    .pot-label{margin-top:6px;font-size:1.15rem;font-weight:700}
+
+    .prize-copy .section-title{
+      text-align:left;
+      font-size:clamp(2rem,5vw,3.2rem);
+    }
+
+    .prize-copy p,
+    .enter-copy,
+    .result-copy{
+      color:var(--muted);
+      line-height:1.6;
+      font-size:1rem;
+      margin-bottom:18px;
+    }
+
+    .modal-actions{
+      display:flex;
+      justify-content:center;
+      margin-top:24px;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .admin-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .entry-admin-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .entry-admin-actions .btn{
+      min-width:108px;
+    }
+
+    .enter-layout{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:20px;
+      align-items:start;
+    }
+
+    .form-card,
+    .preview-card,
+    .draw-card,
+    .result-box,
+    .entries-card{
+      background:#fffdf8;
+      border:1px solid rgba(9,25,53,.08);
+      border-radius:22px;
+      padding:22px;
+      box-shadow:0 10px 26px rgba(9,25,53,.05);
+      transition:transform .18s ease, box-shadow .18s ease;
+    }
+
+    .field{margin-bottom:16px}
+    .field label{display:block;font-weight:800;color:var(--text);margin-bottom:8px}
+    .field input{
+      width:100%;
+      padding:14px 15px;
+      border-radius:14px;
+      border:1px solid rgba(9,25,53,.12);
+      background:#fff;
+      color:var(--text);
+      outline:none;
+    }
+
+    .field input:focus{
+      border-color:var(--gold);
+      box-shadow:0 0 0 4px rgba(215,167,74,.14);
+    }
+
+    .helper,
+    .field-error,
+    .status-copy{
+      font-size:.94rem;
+      line-height:1.5;
+      margin-top:8px;
+    }
+
+    .helper,.status-copy{color:#6d717a}
+    .field-error{color:var(--danger);font-weight:700;min-height:1.4em}
+    .status-copy.ok{color:var(--success);font-weight:700}
+    .status-copy.warn{color:#915e00;font-weight:700}
+
+    .preview-card h3,
+    .draw-card h3,
+    .entries-card h3{
+      font-family:Cinzel,serif;
+      font-size:1.5rem;
+      color:var(--text);
+      margin-bottom:12px;
+    }
+
+    .mini-stats{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:16px;
+    }
+
+    .mini-stat{
+      border-radius:16px;
+      padding:16px;
+      background:#f6f1e6;
+      border:1px solid rgba(215,167,74,.22);
+      color:var(--text);
+      font-weight:700;
+      text-align:center;
+    }
+
+    .draw-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      margin-top:20px;
+    }
+
+    .wheel-card{
+      text-align:center;
+      padding:18px;
+      background:#fffdf8;
+      border:1px solid rgba(9,25,53,.08);
+      border-radius:22px;
+      box-shadow:0 10px 26px rgba(9,25,53,.05);
+    }
+
+    .wheel-topline{color:#b68a38;text-transform:uppercase;letter-spacing:.1em;font-weight:800;font-size:.82rem;margin-bottom:10px}
+
+    .mini-pointer{
+      width:0;height:0;
+      border-left:12px solid transparent;
+      border-right:12px solid transparent;
+      border-top:20px solid var(--gold);
+      margin:0 auto 10px;
+      filter:drop-shadow(0 3px 4px rgba(0,0,0,.18));
+    }
+
+    .mini-wheel{
+      width:min(100%,270px);
+      margin:0 auto;
+      aspect-ratio:1;
+      border-radius:50%;
+      border:10px solid #cc9636;
+      background:conic-gradient(
+        #0d4a8d 0deg 15deg,
+        #1f7de2 15deg 30deg,
+        #1d7e48 30deg 45deg,
+        #f0b53a 45deg 60deg,
+        #c21818 60deg 75deg,
+        #8d0f16 75deg 90deg,
+        #0d4a8d 90deg 105deg,
+        #2f89e5 105deg 120deg,
+        #116d3d 120deg 135deg,
+        #d82424 135deg 150deg,
+        #0d4a8d 150deg 165deg,
+        #1f7de2 165deg 180deg,
+        #1d7e48 180deg 195deg,
+        #f0b53a 195deg 210deg,
+        #c21818 210deg 225deg,
+        #8d0f16 225deg 240deg,
+        #0d4a8d 240deg 255deg,
+        #2f89e5 255deg 270deg,
+        #116d3d 270deg 285deg,
+        #d82424 285deg 300deg,
+        #0d4a8d 300deg 315deg,
+        #1f7de2 315deg 330deg,
+        #1d7e48 330deg 345deg,
+        #f0b53a 345deg 360deg
+      );
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 14px 30px rgba(12,18,35,.18), inset 0 0 0 3px rgba(255,255,255,.35);
+      transition:transform 4.8s cubic-bezier(.12,.85,.12,1);
+      will-change:transform;
+    }
+
+    .mini-wheel::after{
+      content:"";
+      position:absolute;
+      inset:50%;
+      width:86px;
+      height:86px;
+      transform:translate(-50%,-50%);
+      border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, #15345e, #071a38 62%, #030f22 100%);
+      border:8px solid var(--gold);
+      box-shadow:inset 0 2px 6px rgba(255,255,255,.18);
+    }
+
+    .spin-result{
+      margin-top:14px;
+      min-height:60px;
+      display:grid;
+      place-items:center;
+      border-radius:16px;
+      background:#fff;
+      border:1px solid rgba(9,25,53,.08);
+      color:var(--text);
+      font-weight:800;
+      padding:12px;
+      line-height:1.35;
+    }
+
+    .spin-actions{margin-top:14px}
+    .spin-actions .btn{width:100%}
+    .btn[disabled]{opacity:.5;cursor:not-allowed;transform:none}
+
+    .btn.loading{position:relative;color:transparent !important;pointer-events:none}
+    .btn.loading::after{
+      content:"";
+      position:absolute;
+      inset:50% auto auto 50%;
+      width:18px;
+      height:18px;
+      margin:-9px 0 0 -9px;
+      border-radius:50%;
+      border:2px solid rgba(9,25,53,.22);
+      border-top-color:rgba(9,25,53,.95);
+      animation:spinLoader .72s linear infinite;
+    }
+
+    .spin-result.is-pending{
+      background:linear-gradient(90deg,#fff 0%,#f7f1e5 50%,#fff 100%);
+      background-size:220% 100%;
+      animation:shimmer 1s linear infinite;
+    }
+
+    .result-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      margin-top:20px;
+    }
+
+    .result-label{color:#b68a38;text-transform:uppercase;letter-spacing:.1em;font-weight:800;font-size:.82rem;margin-bottom:8px}
+    .result-value{font-family:Cinzel,serif;color:var(--text);font-size:1.9rem;line-height:1.1}
+    .result-summary{margin-top:18px;text-align:center;color:var(--muted);font-weight:700;line-height:1.6}
+
+    .entries-list{
+      display:grid;
+      gap:12px;
+      margin-top:16px;
+    }
+
+    .entry-item{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      padding:14px 16px;
+      border-radius:16px;
+      border:1px solid rgba(9,25,53,.08);
+      background:#fff;
+    }
+
+    .entry-item strong{color:var(--text);display:block;margin-bottom:4px}
+    .entry-item span{color:var(--muted);font-size:.94rem;line-height:1.5}
+
+    .badge{
+      flex-shrink:0;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#f6f1e6;
+      border:1px solid rgba(215,167,74,.22);
+      color:var(--text);
+      font-weight:800;
+      font-size:.86rem;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:20px;
+      transform:translateX(-50%) translateY(20px);
+      min-width:min(92vw,360px);
+      max-width:min(92vw,420px);
+      padding:14px 16px;
+      border-radius:16px;
+      background:#fff;
+      color:var(--text);
+      box-shadow:0 18px 38px rgba(0,0,0,.22);
+      border:1px solid rgba(9,25,53,.08);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .18s ease, transform .18s ease;
+      z-index:200;
+      font-weight:700;
+    }
+
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes spinLoader{to{transform:rotate(360deg)}}
+    @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+
+    @keyframes boardExpand{from{opacity:0;transform:translateY(-6px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes pulseGlow{0%,100%{box-shadow:0 14px 32px rgba(215,167,74,.22)}50%{box-shadow:0 18px 38px rgba(215,167,74,.32)}}
+    @keyframes oddsFillGrow{from{width:0}to{width:var(--odds-width, 0%)}}
+
+    .public-board,
+    .panel,
+    .form-card,
+    .preview-card,
+    .draw-card,
+    .result-box,
+    .entries-card,
+    .wheel-card,
+    .board-card,
+    .board-compact{
+      animation:fadeUp .34s ease both;
+    }
+
+    .public-board{
+      background:linear-gradient(180deg, rgba(17,43,85,.88), rgba(9,31,67,.88));
+      border-color:rgba(255,255,255,.14);
+      box-shadow:0 22px 44px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .board-toolbar{max-width:760px}
+
+    .search-field input{
+      box-shadow:0 10px 24px rgba(0,0,0,.14), inset 0 0 0 1px rgba(9,25,53,.08);
+    }
+
+    .search-meta{
+      background:rgba(255,255,255,.09);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+    }
+
+    .board-card{
+      box-shadow:0 16px 34px rgba(0,0,0,.16);
+      border-color:rgba(255,255,255,.58);
+    }
+
+    .board-card.you{animation:pulseGlow 2.8s ease-in-out infinite}
+
+    .board-compact{
+      transition:transform .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+
+    .board-compact:hover,
+    .board-compact:focus-visible{
+      transform:translateY(-1px);
+      box-shadow:0 10px 22px rgba(0,0,0,.14), inset 0 0 0 1px rgba(255,255,255,.12);
+    }
+
+    .board-card-detail{animation:boardExpand .22s ease both}
+
+    .odds-strip{
+      flex-direction:column;
+      align-items:stretch;
+      gap:10px;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.08), 0 10px 24px rgba(0,0,0,.16);
+    }
+
+    .odds-strip-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .odds-meter{
+      height:10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.12);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .odds-meter-fill{
+      height:100%;
+      width:var(--odds-width, 0%);
+      border-radius:999px;
+      background:linear-gradient(90deg, #efca74, #d7a74a 58%, #f6dd9c);
+      box-shadow:0 0 18px rgba(239,202,116,.28);
+      animation:oddsFillGrow .55s ease both;
+    }
+
+    .admin-security-note{
+      margin-top:14px;
+      padding:14px 16px;
+      border-radius:16px;
+      background:#f6f1e6;
+      border:1px solid rgba(215,167,74,.22);
+      color:var(--text);
+    }
+
+    .admin-security-note strong{display:block;margin-bottom:6px}
+    .admin-security-note p{margin:0;color:var(--muted);font-size:.95rem;line-height:1.55}
+
+    .full-lock-banner{
+      margin-top:18px;
+      padding:16px 18px;
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(239,202,116,.18), rgba(255,255,255,.08));
+      border:1px solid rgba(239,202,116,.28);
+      text-align:left;
+      display:none;
+    }
+
+    .full-lock-banner.show{display:block;animation:fadeUp .28s ease both}
+    .full-lock-banner strong{display:block;color:#fff;font-size:1.05rem;margin-bottom:4px}
+    .full-lock-banner span{color:rgba(255,255,255,.8)}
+
+
+    .public-board{
+      margin-top:26px;
+      text-align:left;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:26px;
+      padding:20px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
+
+    .public-board-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:16px;
+      margin-bottom:14px;
+    }
+
+    .board-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:10px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(215,167,74,.12);
+      border:1px solid rgba(215,167,74,.28);
+      color:#f2cf8a;
+      font-size:.85rem;
+      font-weight:800;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+
+    .public-board h3{
+      font-family:Cinzel,serif;
+      font-size:clamp(1.5rem,4vw,2.2rem);
+      line-height:1.05;
+      margin-bottom:8px;
+      color:#fff;
+    }
+
+    .public-board p{
+      color:rgba(255,255,255,.8);
+      max-width:620px;
+    }
+
+    .board-toolbar{
+      display:grid;
+      grid-template-columns:minmax(0,1.35fr) auto;
+      gap:12px;
+      align-items:center;
+      margin:16px 0 14px;
+      width:100%;
+      max-width:720px;
+    }
+
+    .search-field{
+      position:relative;
+      width:100%;
+      min-width:0;
+    }
+
+    .search-field input{
+      display:block;
+      width:100%;
+      min-width:0;
+      min-height:54px;
+      border:none;
+      border-radius:16px;
+      background:rgba(255,255,255,.92);
+      color:var(--text);
+      padding:0 18px;
+      font-size:1rem;
+      box-shadow:inset 0 0 0 1px rgba(9,25,53,.08);
+    }
+
+    .search-field input::placeholder{
+      color:#7b8088;
+    }
+
+    .search-meta{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:54px;
+      width:100%;
+      max-width:100%;
+      padding:0 16px;
+      border-radius:16px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.1);
+      color:#fff;
+      font-weight:700;
+      white-space:normal;
+      text-align:center;
+      line-height:1.35;
+    }
+
+
+    .search-field select{
+      display:block;
+      width:100%;
+      min-width:0;
+      min-height:54px;
+      border:none;
+      border-radius:16px;
+      background:rgba(255,255,255,.92);
+      color:var(--text);
+      padding:0 18px;
+      font-size:1rem;
+      box-shadow:inset 0 0 0 1px rgba(9,25,53,.08);
+      appearance:none;
+      cursor:pointer;
+    }
+
+    .board-last-updated{
+      color:rgba(255,255,255,.72);
+      font-size:.9rem;
+      font-weight:700;
+      margin-bottom:14px;
+    }
+
+    .board-insights{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+      margin-bottom:16px;
+      align-items:stretch;
+    }
+
+    .insight-card{
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      min-height:138px;
+      padding:14px 16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.1);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+      position:relative;
+      overflow:hidden;
+      transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    .insight-card.is-leader{
+      border-color:rgba(239,202,116,.38);
+      background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(215,167,74,.1));
+      box-shadow:inset 0 0 0 1px rgba(239,202,116,.16), 0 0 24px rgba(239,202,116,.12);
+    }
+
+    .insight-card.is-leader::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg, rgba(239,202,116,.12), transparent 48%);
+      pointer-events:none;
+    }
+
+    .leader-badge{
+      display:none;
+      align-self:flex-start;
+      margin-top:10px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(239,202,116,.18);
+      border:1px solid rgba(239,202,116,.28);
+      color:#f4d78f;
+      font-size:.72rem;
+      font-weight:800;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+    }
+
+    .insight-card.is-leader .leader-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .insight-label{
+      display:block;
+      color:rgba(255,255,255,.66);
+      font-size:.78rem;
+      font-weight:800;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+
+    .insight-value{
+      display:block;
+      color:#fff;
+      font-size:1.08rem;
+      font-weight:800;
+      line-height:1.2;
+      word-break:break-word;
+    }
+
+    .insight-note{
+      display:block;
+      color:rgba(255,255,255,.72);
+      font-size:.88rem;
+      margin-top:auto;
+      padding-top:8px;
+      line-height:1.35;
+    }
+
+    .tracker-progress{
+      height:10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.1);
+      overflow:hidden;
+      margin:12px 0 10px;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+
+    .tracker-progress-fill{
+      height:100%;
+      width:var(--progress-width,0%);
+      background:linear-gradient(90deg,#efca74,#d7a74a 58%,#f6dd9c);
+      border-radius:999px;
+      transition:width .22s ease;
+    }
+
+    .tracker-stat-row{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:8px;
+      margin-bottom:12px;
+    }
+
+    .tracker-stat{
+      padding:10px 12px;
+      border-radius:16px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .tracker-stat strong{
+      display:block;
+      color:#fff;
+      font-size:1rem;
+      margin-bottom:4px;
+    }
+
+    .tracker-stat span{
+      display:block;
+      color:rgba(255,255,255,.68);
+      font-size:.78rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    .tracker-section-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      color:#fff;
+      font-size:.88rem;
+      font-weight:800;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      margin:14px 0 8px;
+    }
+
+    .tracker-divider{
+      height:1px;
+      background:rgba(255,255,255,.08);
+      margin:12px 0 0;
+    }
+
+    .team-pill-list.available{
+      opacity:.94;
+    }
+
+    .team-pill.available{
+      background:rgba(255,255,255,.06);
+      border-color:rgba(255,255,255,.08);
+    }
+
+    .team-pill.available.featured{
+      border-color:rgba(90,207,153,.35);
+      color:#dff9eb;
+      background:rgba(90,207,153,.12);
+    }
+
+    .board-card-meta{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    .board-jump-row{
+      display:none;
+      gap:8px;
+      flex-wrap:wrap;
+      margin:14px 0 2px;
+    }
+
+    .jump-chip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:40px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.1);
+      color:#fff;
+      font-size:.82rem;
+      font-weight:800;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+
+    .jump-chip:active{
+      transform:scale(.98);
+    }
+
+    .board-meta-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(9,25,53,.06);
+      border:1px solid rgba(9,25,53,.08);
+      color:var(--text);
+      font-size:.82rem;
+      font-weight:700;
+    }
+
+    .board-card-detail .board-card{
+      margin-top:0;
+    }
+
+    .team-tracker-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      margin-top:16px;
+    }
+
+    .tracker-card{
+      padding:18px;
+      border-radius:20px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.1);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+
+    .tracker-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+      color:#fff;
+    }
+
+    .tracker-head h4{
+      font-family:Cinzel,serif;
+      font-size:1.15rem;
+    }
+
+    .tracker-card p{
+      color:rgba(255,255,255,.76);
+      margin-bottom:12px;
+      max-width:none;
+    }
+
+    .team-pill-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .team-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.1);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      font-size:.86rem;
+      font-weight:700;
+    }
+
+    .team-pill.taken{
+      background:rgba(239,202,116,.12);
+      border-color:rgba(239,202,116,.28);
+      color:#f5d48f;
+    }
+
+    .team-pill.open{
+      color:rgba(255,255,255,.82);
+    }
+
+    .board-list{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+    }
+
+    .board-stack{
+      display:grid;
+      gap:12px;
+    }
+
+    .board-list.search-active{
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .board-card{
+      position:relative;
+      padding:18px;
+      border-radius:20px;
+      background:linear-gradient(180deg, rgba(247,244,238,.98), rgba(235,232,225,.98));
+      color:var(--text);
+      box-shadow:0 12px 28px rgba(0,0,0,.14);
+      border:1px solid rgba(255,255,255,.48);
+      overflow:hidden;
+    }
+
+    .board-card.you{
+      box-shadow:0 14px 32px rgba(215,167,74,.24);
+      border-color:rgba(215,167,74,.45);
+    }
+
+    .board-card.you::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg, rgba(239,202,116,.18), transparent 42%);
+      pointer-events:none;
+    }
+
+    .board-compact{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      width:100%;
+      padding:16px 18px;
+      border:none;
+      border-radius:18px;
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+      text-align:left;
+      cursor:pointer;
+    }
+
+    .board-compact:hover,
+    .board-compact:focus-visible{
+      background:rgba(255,255,255,.12);
+      outline:none;
+    }
+
+    .board-compact-main{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .board-compact-rank{
+      min-width:34px;
+      height:34px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:50%;
+      background:rgba(255,255,255,.12);
+      color:#fff;
+      font-weight:800;
+      font-size:.88rem;
+    }
+
+    .board-compact-name{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+    }
+
+    .board-compact-name strong{
+      font-size:1rem;
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .board-compact-name span{
+      color:rgba(255,255,255,.72);
+      font-size:.82rem;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .board-compact-meta{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .board-compact-odds{
+      color:var(--gold-2);
+      font-family:Cinzel,serif;
+      font-size:1.15rem;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .board-compact-arrow{
+      font-size:1rem;
+      opacity:.78;
+      transition:transform .18s ease;
+    }
+
+    .board-compact[aria-expanded="true"] .board-compact-arrow{
+      transform:rotate(180deg);
+    }
+
+    .board-card-detail{
+      margin-top:10px;
+    }
+
+    .board-card-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .board-rank{
+      min-width:42px;
+      height:42px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:50%;
+      background:var(--text);
+      color:#fff;
+      font-weight:800;
+      box-shadow:0 8px 18px rgba(9,25,53,.18);
+    }
+
+    .board-name{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .board-name strong{
+      font-size:1.02rem;
+      line-height:1.2;
+    }
+
+    .board-name span{
+      color:var(--muted);
+      font-weight:700;
+      font-size:.92rem;
+    }
+
+    .you-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      align-self:flex-start;
+      margin-top:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:rgba(215,167,74,.16);
+      color:#8d6516;
+      font-size:.78rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    .board-teams{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    .team-chip{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      border-radius:16px;
+      background:#fff;
+      box-shadow:inset 0 0 0 1px rgba(9,25,53,.08);
+    }
+
+    .team-chip-label{
+      font-size:.78rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      color:#8d6516;
+    }
+
+    .team-chip-value{
+      font-weight:800;
+      color:var(--text);
+      text-align:right;
+    }
+
+    .odds-strip{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+      padding:14px 16px;
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(9,25,53,.96), rgba(14,42,79,.92));
+      color:#fff;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+
+    .odds-copy{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .odds-label{
+      font-size:.72rem;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.72);
+    }
+
+    .odds-note{
+      font-size:.85rem;
+      color:rgba(255,255,255,.78);
+    }
+
+    .odds-value{
+      font-family:Cinzel,serif;
+      font-size:1.5rem;
+      font-weight:800;
+      color:var(--gold-2);
+      white-space:nowrap;
+    }
+
+
+    .odds-badge{
+      display:inline-flex;
+      align-items:center;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:.72rem;
+      font-weight:800;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+
+    .odds-badge.favourite{
+      background:rgba(239,202,116,.18);
+      color:var(--gold-2);
+    }
+
+    .odds-badge.darkhorse{
+      background:rgba(77,146,255,.16);
+      color:#c8dcff;
+    }
+
+    .odds-badge.outsider{
+      background:rgba(255,255,255,.12);
+      color:rgba(255,255,255,.82);
+    }
+
+    .result-odds{
+      margin-top:16px;
+      padding:16px 18px;
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(9,25,53,.96), rgba(14,42,79,.92));
+      color:#fff;
+      box-shadow:0 12px 26px rgba(0,0,0,.14);
+    }
+
+    .result-odds-label{
+      font-size:.76rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.74);
+      font-weight:800;
+    }
+
+    .result-odds-value{
+      font-family:Cinzel,serif;
+      font-size:2rem;
+      font-weight:800;
+      color:var(--gold-2);
+      margin-top:6px;
+    }
+
+    .result-odds-copy{
+      color:rgba(255,255,255,.82);
+      margin-top:6px;
+      font-size:.95rem;
+    }
+
+    .board-footer{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .payment-pill{
+      display:inline-flex;
+      align-items:center;
+      padding:8px 12px;
+      border-radius:999px;
+      font-weight:800;
+      font-size:.83rem;
+    }
+
+    .payment-pill.paid{
+      background:rgba(15,123,64,.12);
+      color:var(--success);
+    }
+
+    .payment-pill.unpaid{
+      background:rgba(168,29,29,.1);
+      color:var(--danger);
+    }
+
+    .board-empty{
+      grid-column:1 / -1;
+      text-align:center;
+      padding:26px 18px;
+      border-radius:18px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.1);
+      color:#fff;
+      font-weight:700;
+    }
+
+
+    @media(max-width:900px){
+      .board-insights,.board-list,.team-tracker-grid,.tracker-stat-row{grid-template-columns:1fr}
+      .prize-grid,.steps-grid,.stats,.enter-layout,.draw-grid,.result-grid,.mini-stats{grid-template-columns:1fr}
+      .stat{border-right:none;border-bottom:1px solid rgba(255,255,255,.1)}
+      .stat:last-child{border-bottom:none}
+      .step{border-right:none;border-bottom:1px solid rgba(9,25,53,.08)}
+      .step:last-child{border-bottom:none}
+      .prize-copy .section-title{text-align:center}
+      .prize-copy p{text-align:center}
+    }
+
+    @media(max-width:700px){
+      body{overflow-x:hidden}
+      .hero{min-height:100svh;padding:20px 16px 28px}
+      .hero::before,.hero::after{top:100px;width:64px;height:64px}
+      .hero-inner{width:100%;max-width:100%}
+      .pill,.meta-chip{font-size:.82rem;padding:10px 14px}
+      h1{font-size:clamp(2.4rem,14vw,4rem);line-height:1.02;margin-bottom:16px}
+      .sub{font-size:1rem;line-height:1.5;margin-bottom:22px}
+      .buttons{flex-direction:column;align-items:stretch;width:100%}
+      .btn{width:100%;min-height:52px}
+      .stats{margin-top:22px;border-radius:18px}
+      .stat{padding:16px 14px}
+      .stat strong{font-size:1.1rem}
+      .overlay{padding:10px 10px 24px;align-items:flex-start}
+      .modal{width:100%;border-radius:22px;padding:12px;margin-top:0;min-height:calc(100svh - 20px)}
+      .close-btn{top:12px;right:12px;width:40px;height:40px}
+      .panel{padding:20px 16px;border-radius:20px;margin-bottom:14px}
+      .eyebrow{font-size:.8rem;margin-bottom:8px}
+      .how-title,.enter-title,.result-title,.section-title{font-size:clamp(2rem,11vw,3rem);line-height:1.02;margin-bottom:18px}
+      .step{padding:18px 8px}
+      .step h3{font-size:1.25rem}
+      .step p{font-size:.98rem}
+      .prize-visual{min-height:180px;padding:18px;border-radius:20px;justify-content:flex-start}
+      .trophy{font-size:4.5rem}
+      .pot-copy-top{font-size:.82rem}
+      .pot-amount{font-size:3.2rem}
+      .pot-label{font-size:1rem}
+      .prize-copy .section-title,.prize-copy p{text-align:left}
+      .modal-actions{margin-top:16px}
+      .wheel-card,.form-card,.preview-card,.draw-card,.result-box,.entries-card{padding:18px;border-radius:18px}
+      .result-value{font-size:1.55rem}
+      .entry-item{flex-direction:column}
+      .badge{align-self:flex-start}
+      .entry-admin-actions{width:100%}
+      .entry-admin-actions .btn,.admin-actions .btn,.modal-actions .btn{width:100%}
+      .toast{bottom:calc(14px + env(safe-area-inset-bottom))}
+      .public-board{margin-top:22px;padding:16px;border-radius:20px}
+      .public-board-head{align-items:flex-start}
+      .board-toolbar{grid-template-columns:1fr;max-width:100%;gap:10px}
+      .search-field,.search-meta{width:100%}
+      .search-field input{padding-inline:16px}
+      .search-meta{justify-content:flex-start;min-height:46px;padding:12px 16px;text-align:left}
+      .board-list{grid-template-columns:1fr}
+      .board-card{padding:16px;border-radius:18px}
+      .team-chip{align-items:flex-start;flex-direction:column}
+      .team-chip-value{text-align:left}
+    }
+
+    @media(max-width:700px){
+      html{-webkit-text-size-adjust:100%}
+      body{padding-bottom:env(safe-area-inset-bottom)}
+      .field input,.search-field input,.search-field select{font-size:16px;min-height:52px}
+      .public-board-head{flex-direction:column;align-items:stretch}
+      .board-jump-row{display:flex;overflow:auto;flex-wrap:nowrap;padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+      .board-jump-row::-webkit-scrollbar{display:none}
+      .jump-chip{scroll-snap-align:start;flex:0 0 auto}
+      .board-toolbar{position:sticky;top:calc(env(safe-area-inset-top) + 10px);z-index:6;padding:10px;border-radius:18px;background:rgba(7,26,56,.96);backdrop-filter:blur(12px);box-shadow:0 10px 22px rgba(0,0,0,.16)}
+      .board-toolbar .search-field{min-width:0}
+      .search-field input,.search-field select{border-radius:14px}
+      .board-insights{display:grid;grid-template-columns:minmax(0,1fr) !important;overflow:visible;gap:10px;padding-bottom:0;margin-inline:0;align-items:stretch;width:100%}
+      .board-insights::-webkit-scrollbar{display:none}
+      .insight-card{padding:12px 13px;border-radius:16px;min-height:138px;width:100%;min-width:0;max-width:100%;overflow:hidden}
+      .insight-value,.insight-note{word-break:normal;white-space:normal}
+      .board-insights > .insight-card{grid-column:auto !important; width:100% !important; min-width:0 !important;}
+
+      .insight-label{font-size:.72rem;margin-bottom:6px}
+      .insight-value{font-size:1rem}
+      .insight-note{font-size:.8rem}
+      .board-list{gap:10px}
+      .board-compact{padding:14px 15px;border-radius:16px}
+      .board-compact-rank{min-width:32px;height:32px;font-size:.82rem}
+      .board-compact-name strong{font-size:.96rem}
+      .board-compact-name span{font-size:.78rem}
+      .board-compact-meta{gap:8px}
+      .board-compact-odds{font-size:1.02rem}
+      .tracker-stat-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+      .tracker-stat{padding:10px 8px;border-radius:14px;text-align:center}
+      .tracker-stat strong{font-size:.98rem}
+      .tracker-stat span{font-size:.68rem;letter-spacing:.03em}
+      .team-tracker-grid{display:flex;flex-direction:column;overflow:visible;gap:12px;padding-bottom:0}
+      .tracker-card{scroll-snap-align:start;min-height:100%}
+      .tracker-head{flex-direction:row;align-items:center}
+      .tracker-head h4{font-size:1.1rem}
+      .tracker-card p{font-size:.94rem;line-height:1.45}
+      .tracker-section-title{font-size:.76rem;gap:8px;flex-wrap:wrap}
+      .team-pill-list{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+      .team-pill{padding:8px 9px;font-size:.8rem;max-width:100%;word-break:normal;min-height:40px;align-items:center}
+      .board-card-head{gap:10px}
+      .board-card-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+      .board-meta-pill{padding:8px 9px;font-size:.76rem;min-height:38px}
+      .board-card{padding:15px}
+      .board-card-top{align-items:flex-start}
+      .board-rank{min-width:38px;height:38px;font-size:.92rem}
+      .board-name strong{font-size:.98rem}
+      .board-name span{font-size:.84rem}
+      .team-chip{padding:11px 12px;border-radius:14px}
+      .team-chip-label{font-size:.72rem}
+      .team-chip-value{font-size:.95rem;line-height:1.3}
+      .odds-strip{padding:13px 14px;border-radius:16px}
+      .odds-value{font-size:1.32rem}
+      .odds-note{font-size:.8rem}
+      .mini-stat,.tracker-card,.insight-card,.wheel-card,.form-card,.preview-card,.draw-card,.result-box,.entries-card{box-shadow:none}
+      .hero,.overlay{padding-left:max(16px, env(safe-area-inset-left));padding-right:max(16px, env(safe-area-inset-right))}
+      .modal{padding:12px;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+    }
+
+    @media(max-width:520px){
+      .hero{padding-top:max(18px, env(safe-area-inset-top));padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+      .hero-meta{gap:8px;margin-bottom:14px}
+      .pill,.meta-chip{width:100%;padding:10px 12px}
+      h1{font-size:clamp(2.1rem,13vw,3.2rem)}
+      .sub{font-size:.98rem}
+      .panel{padding:18px 14px}
+      .how-title,.enter-title,.result-title,.section-title{font-size:clamp(1.72rem,10vw,2.45rem)}
+      .close-btn{top:max(10px, env(safe-area-inset-top));right:max(10px, env(safe-area-inset-right))}
+      .board-toolbar{top:calc(env(safe-area-inset-top) + 8px);padding:8px;border-radius:16px}
+      .board-insights{grid-template-columns:1fr;align-items:stretch}
+      .search-field input,.search-field select{border-radius:14px}
+      .search-meta{min-height:44px;padding:10px 14px}
+      .tracker-card{padding:14px}
+      .tracker-progress{height:9px}
+      .tracker-stat-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+      .tracker-stat{padding:9px 6px}
+      .tracker-stat strong{font-size:.92rem}
+      .tracker-stat span{font-size:.63rem}
+      .tracker-section-title{margin:12px 0 7px}
+      .team-pill-list{grid-template-columns:1fr 1fr}
+      .team-pill{font-size:.76rem;padding:6px 8px;min-height:38px}
+      .board-card{padding:14px;border-radius:16px}
+      .board-card-meta{margin-top:10px;grid-template-columns:1fr 1fr}
+      .board-meta-pill{font-size:.74rem}
+      .result-value{font-size:1.35rem}
+      .buttons{gap:10px}
+      .btn{border-radius:13px}
+    }
+
+    @media(max-width:380px){
+      .pill,.meta-chip{font-size:.78rem}
+      .board-kicker{font-size:.76rem;padding:7px 10px}
+      .board-insights{gap:8px}
+      .tracker-stat-row{grid-template-columns:1fr}
+      .tracker-stat{text-align:left;padding:10px 12px}
+      .team-pill-list{gap:5px}
+      .team-pill{width:100%;justify-content:flex-start}
+      .board-meta-pill{width:100%;justify-content:flex-start}
+    }
+
+
+    
+    @keyframes leaderGlow{
+      0%,100%{box-shadow:inset 0 0 0 1px rgba(239,202,116,.16), 0 0 18px rgba(239,202,116,.1)}
+      50%{box-shadow:inset 0 0 0 1px rgba(239,202,116,.26), 0 0 28px rgba(239,202,116,.18)}
+    }
+
+    @keyframes leaderSwitch{
+      0%{transform:translateY(4px);opacity:.72}
+      100%{transform:translateY(0);opacity:1}
+    }
+
+    @keyframes trackerPulse{
+      0%{box-shadow:0 0 0 0 rgba(239,202,116,.34)}
+      70%{box-shadow:0 0 0 16px rgba(239,202,116,0)}
+      100%{box-shadow:0 0 0 0 rgba(239,202,116,0)}
+    }
+
+    @keyframes trackerFlash{
+      0%{transform:scale(.98);filter:brightness(1.05)}
+      40%{transform:scale(1.03);filter:brightness(1.24)}
+      100%{transform:scale(1);filter:brightness(1)}
+    }
+
+    .tracker-toggle{
+      appearance:none;
+      border:none;
+      background:transparent;
+      color:inherit;
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:0;
+      font:inherit;
+      cursor:pointer;
+      text-align:left;
+    }
+
+    .tracker-toggle-icon{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:28px;
+      height:28px;
+      border-radius:50%;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      font-size:.82rem;
+      transition:transform .18s ease;
+      flex-shrink:0;
+    }
+
+    .tracker-toggle[aria-expanded="false"] .tracker-toggle-icon{
+      transform:rotate(-90deg);
+    }
+
+    .tracker-section-panel{
+      overflow:hidden;
+      transition:max-height .24s ease, opacity .2s ease, margin-top .2s ease;
+      max-height:1200px;
+      opacity:1;
+    }
+
+    .tracker-section-panel.collapsed{
+      max-height:0;
+      opacity:0;
+      margin-top:0;
+      pointer-events:none;
+    }
+
+    .tracker-card.best-available{
+      position:relative;
+    }
+
+    .tracker-card.best-available::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:inherit;
+      pointer-events:none;
+      box-shadow:0 0 0 1px rgba(90,207,153,.24), 0 0 30px rgba(90,207,153,.12);
+      opacity:.95;
+    }
+
+    .team-pill{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      min-width:0;
+    }
+
+    .team-pill.latest,
+    .tracker-stat.is-live{
+      animation:trackerFlash .5s ease, trackerPulse 1.4s ease;
+    }
+
+    .team-pill.best-pick{
+      border-color:rgba(90,207,153,.42);
+      color:#e8fff4;
+      background:linear-gradient(135deg, rgba(90,207,153,.18), rgba(90,207,153,.09));
+      box-shadow:0 0 0 1px rgba(90,207,153,.12), 0 0 18px rgba(90,207,153,.14);
+    }
+
+    .team-pill.best-pick::before{
+      content:"★";
+      color:#91f0c2;
+      font-size:.78rem;
+      line-height:1;
+      flex-shrink:0;
+    }
+
+    .tracker-best-note{
+      margin:-2px 0 10px;
+      color:rgba(255,255,255,.7);
+      font-size:.8rem;
+      font-weight:700;
+      line-height:1.35;
+    }
+
+    @media(max-width:700px){
+      .board-list{
+        scroll-snap-type:y proximity;
+      }
+
+      .board-stack,
+      .board-card{
+        scroll-snap-align:start;
+      }
+
+      .team-tracker-grid{
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+        overflow:visible;
+        scroll-snap-type:none;
+      }
+
+      .tracker-card{
+        width:100%;
+        padding:16px;
+        border-radius:18px;
+        background:rgba(255,255,255,.06);
+      }
+
+      .tracker-head{
+        flex-direction:row;
+        justify-content:space-between;
+        align-items:center;
+      }
+
+      .tracker-card p{
+        margin-bottom:10px;
+      }
+
+      .team-pill-list{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:6px;
+      }
+
+      .team-pill{
+        width:100%;
+        justify-content:flex-start;
+        word-break:normal;
+      }
+    }
+
+    @media(max-width:520px){
+      .team-pill-list{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .team-pill{
+        font-size:.76rem;
+        padding:8px 9px;
+        min-height:40px;
+      }
+    }
+
+    @media(max-width:380px){
+      .team-pill-list{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      html{scroll-behavior:auto}
+      *, *::before, *::after{animation:none !important;transition:none !important}
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-meta">
+        <div class="pill">• 24 Players • £1 Per Team</div>
+        <div class="meta-chip" id="syncStatus">Checking live sync…</div>
+        <button class="meta-chip hidden" id="installAppBtn" type="button">Install App</button>
+        <button class="meta-chip" id="adminBtn" type="button">Admin</button>
+      </div>
+
+      <h1>
+        World Cup<br>
+        <span class="accent">Draw</span> Tournament
+      </h1>
+
+      <p class="sub">
+        Spin the wheel. Get 2 teams. One from the Top 24. One from the Bottom 24.<br>
+        Enter with £1 per team. Winner takes the jackpot.
+      </p>
+
+      <div class="buttons">
+        <button class="btn primary" id="enterDrawBtn" type="button">Enter Draw</button>
+        <button class="btn secondary" id="howItWorksBtn" type="button">How It Works</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <strong id="playerCount">0 Players</strong>
+          <span>Friends entered</span>
+        </div>
+        <div class="stat">
+          <strong id="prizePool">£0 Prize Pool</strong>
+          <span>Paid players only</span>
+        </div>
+        <div class="stat">
+          <strong id="spotsLeft">24 Spots Left</strong>
+          <span>2 teams each</span>
+        </div>
+      </div>
+
+      <div class="full-lock-banner" id="fullLockBanner">
+        <strong>Tournament full</strong>
+        <span>All 24 player spots are taken. The board below still updates live.</span>
+      </div>
+
+      <section class="public-board" aria-labelledby="playerBoardTitle">
+        <div class="public-board-head">
+          <div>
+            <div class="board-kicker">Search Players</div>
+            <h3 id="playerBoardTitle">Player leaderboard</h3>
+            <p>Search by name, nickname, or team and see each draw's estimated win chance.</p>
+          </div>
+        </div>
+        <div class="board-jump-row">
+          <a class="jump-chip" href="#playerBoardTitle">Leaderboard</a>
+          <a class="jump-chip" href="#topTrackerCard">Top 24</a>
+          <a class="jump-chip" href="#bottomTrackerCard">Bottom 24</a>
+        </div>
+        <div class="board-toolbar">
+          <div class="search-field">
+            <input id="playerSearch" type="text" placeholder="Search player, nickname, or team" autocomplete="off">
+          </div>
+          <div class="search-field">
+            <select id="boardSort">
+              <option value="odds">Sort: Best odds first</option>
+              <option value="newest">Sort: Newest first</option>
+              <option value="oldest">Sort: Oldest first</option>
+              <option value="name">Sort: Name A-Z</option>
+            </select>
+          </div>
+          <div class="search-field">
+            <select id="boardFilter">
+              <option value="all">Show: Everyone</option>
+              <option value="paid">Show: Paid only</option>
+              <option value="unpaid">Show: Unpaid only</option>
+            </select>
+          </div>
+          <div class="search-meta" id="playerSearchMeta">No players yet.</div>
+        </div>
+        <div class="board-last-updated" id="boardLastUpdated">Last updated: waiting for live sync…</div>
+        <div class="board-insights">
+          <article class="insight-card is-leader" id="boardLeaderCard">
+            <span class="insight-label">Current leader</span>
+            <strong class="insight-value" id="boardLeaderValue">Waiting for entries</strong>
+            <span class="insight-note" id="boardLeaderNote">Best estimated draw odds will show here.</span>
+            <span class="leader-badge" id="boardLeaderBadge">🔥 Best draw</span>
+          </article>
+          <article class="insight-card">
+            <span class="insight-label">Paid entries</span>
+            <strong class="insight-value" id="boardPaidValue">0 / 0</strong>
+            <span class="insight-note" id="boardPaidNote">No paid entries yet.</span>
+          </article>
+          <article class="insight-card">
+            <span class="insight-label">Average win chance</span>
+            <strong class="insight-value" id="boardAverageOddsValue">0%</strong>
+            <span class="insight-note" id="boardAverageOddsNote">This updates as teams are drawn.</span>
+          </article>
+          <article class="insight-card">
+            <span class="insight-label">Open player spots</span>
+            <strong class="insight-value" id="boardOpenSpotsValue">24</strong>
+            <span class="insight-note" id="boardOpenSpotsNote">Every player gets one top and one bottom team.</span>
+          </article>
+        </div>
+        <div class="board-list" id="publicBoardList"></div>
+        <div class="team-tracker-grid">
+          <article class="tracker-card" id="topTrackerCard">
+            <div class="tracker-head">
+              <h4>Top 24 tracker</h4>
+              <span id="topTrackerCount">0 / 24 taken</span>
+            </div>
+            <p id="topTrackerCopy">No top teams taken yet.</p>
+            <div class="tracker-progress" aria-hidden="true"><div class="tracker-progress-fill" id="topTrackerProgress"></div></div>
+            <div class="tracker-stat-row">
+              <div class="tracker-stat"><strong id="topTrackerTakenStat">0</strong><span>Taken</span></div>
+              <div class="tracker-stat"><strong id="topTrackerOpenStat">24</strong><span>Open</span></div>
+              <div class="tracker-stat"><strong id="topTrackerHotStat">None</strong><span>Latest taken</span></div>
+            </div>
+            <div class="tracker-section-title">
+              <button class="tracker-toggle" type="button" data-tracker-toggle="top-taken" aria-expanded="true">
+                <span>Taken teams</span><span id="topTakenLabel">0 gone</span><span class="tracker-toggle-icon">⌄</span>
+              </button>
+            </div>
+            <div class="tracker-section-panel" id="topTakenPanel">
+              <div class="team-pill-list" id="topTrackerList"></div>
+            </div>
+            <div class="tracker-divider"></div>
+            <div class="tracker-section-title">
+              <button class="tracker-toggle" type="button" data-tracker-toggle="top-available" aria-expanded="true">
+                <span>Still available</span><span id="topAvailableLabel">24 left</span><span class="tracker-toggle-icon">⌄</span>
+              </button>
+            </div>
+            <div class="tracker-section-panel" id="topAvailablePanel">
+              <div class="tracker-best-note" id="topBestNote">Best available team will glow here.</div>
+              <div class="team-pill-list available" id="topTrackerAvailableList"></div>
+            </div>
+          </article>
+          <article class="tracker-card" id="bottomTrackerCard">
+            <div class="tracker-head">
+              <h4>Bottom 24 tracker</h4>
+              <span id="bottomTrackerCount">0 / 24 taken</span>
+            </div>
+            <p id="bottomTrackerCopy">No bottom teams taken yet.</p>
+            <div class="tracker-progress" aria-hidden="true"><div class="tracker-progress-fill" id="bottomTrackerProgress"></div></div>
+            <div class="tracker-stat-row">
+              <div class="tracker-stat"><strong id="bottomTrackerTakenStat">0</strong><span>Taken</span></div>
+              <div class="tracker-stat"><strong id="bottomTrackerOpenStat">24</strong><span>Open</span></div>
+              <div class="tracker-stat"><strong id="bottomTrackerHotStat">None</strong><span>Latest taken</span></div>
+            </div>
+            <div class="tracker-section-title">
+              <button class="tracker-toggle" type="button" data-tracker-toggle="bottom-taken" aria-expanded="true">
+                <span>Taken teams</span><span id="bottomTakenLabel">0 gone</span><span class="tracker-toggle-icon">⌄</span>
+              </button>
+            </div>
+            <div class="tracker-section-panel" id="bottomTakenPanel">
+              <div class="team-pill-list" id="bottomTrackerList"></div>
+            </div>
+            <div class="tracker-divider"></div>
+            <div class="tracker-section-title">
+              <button class="tracker-toggle" type="button" data-tracker-toggle="bottom-available" aria-expanded="true">
+                <span>Still available</span><span id="bottomAvailableLabel">24 left</span><span class="tracker-toggle-icon">⌄</span>
+              </button>
+            </div>
+            <div class="tracker-section-panel" id="bottomAvailablePanel">
+              <div class="tracker-best-note" id="bottomBestNote">Best available team will glow here.</div>
+              <div class="team-pill-list available" id="bottomTrackerAvailableList"></div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <div class="overlay" id="howItWorksOverlay" role="dialog" aria-modal="true" aria-labelledby="howTitle">
+    <div class="modal">
+      <button class="close-btn" id="closeOverlayBtn" aria-label="Close" type="button">✕</button>
+
+      <section class="panel">
+        <div class="eyebrow">Simple Process</div>
+        <h2 class="how-title" id="howTitle">How It Works</h2>
+
+        <div class="steps-grid">
+          <div class="step">
+            <div class="step-number">1</div>
+            <h3>Enter &amp; Pay</h3>
+            <p>Enter your real name and your nickname, then join the draw.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <h3>Spin the Wheel</h3>
+            <p>Spin once for a Top 24 team and once for a Bottom 24 team.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <h3>See Your Teams</h3>
+            <p>Your two nations are revealed straight after both spins finish.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="eyebrow">Prizes &amp; Jackpot</div>
+        <div class="prize-grid">
+          <div class="prize-visual">
+            <div class="trophy" aria-hidden="true">🏆</div>
+            <div>
+              <div class="pot-copy-top">Winner Takes All</div>
+              <div class="pot-amount" id="maxPotDisplay">£48</div>
+              <div class="pot-label">Full Prize Pool</div>
+            </div>
+          </div>
+
+          <div class="prize-copy">
+            <h2 class="section-title">Winner Takes the Entire Pot</h2>
+            <p>£1 entry per team, 2 teams per player, 24 players maximum. If all 24 spots are filled, the full pot reaches £48. Everything stays simple, transparent, and easy to track.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="modal-actions">
+        <button class="btn primary" id="modalEnterBtn" type="button">Enter Tournament</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="enterOverlay" role="dialog" aria-modal="true" aria-labelledby="enterTitle">
+    <div class="modal">
+      <button class="close-btn" id="closeEnterBtn" aria-label="Close" type="button">✕</button>
+
+      <section class="panel">
+        <div class="eyebrow">Enter Tournament</div>
+        <h2 class="enter-title" id="enterTitle">Start Your Draw</h2>
+        <p class="enter-copy" style="text-align:center;max-width:760px;margin:0 auto 22px;">Enter your name and nickname, then spin once for your Top 24 team and once for your Bottom 24 team.</p>
+
+        <div class="enter-layout" id="entryStep">
+          <div class="form-card">
+            <h3>Your Details</h3>
+            <div class="field">
+              <label for="fullName">Full Name</label>
+              <input id="fullName" type="text" placeholder="Enter your full name" autocomplete="name" maxlength="40">
+            </div>
+            <div class="field">
+              <label for="nickName">Nickname</label>
+              <input id="nickName" type="text" placeholder="Enter the nickname you want shown" autocomplete="nickname" maxlength="24">
+            </div>
+            <p class="field-error" id="formError" aria-live="polite"></p>
+            <p class="helper">This is the name and nickname that will be shown with your teams after the draw.</p>
+            <div class="modal-actions" style="justify-content:flex-start;margin-top:18px;">
+              <button class="btn primary" id="startSpinsBtn" type="button">Continue to Spins</button>
+            </div>
+          </div>
+
+          <div class="preview-card">
+            <h3>How your draw works</h3>
+            <p class="enter-copy">You’ll spin two wheels. The first gives you one nation from the Top 24. The second gives you one nation from the Bottom 24.</p>
+            <div class="mini-stats">
+              <div class="mini-stat">1 Top 24 Team</div>
+              <div class="mini-stat">1 Bottom 24 Team</div>
+              <div class="mini-stat">£2 Total Entry</div>
+              <div class="mini-stat"><span id="spotCount">24</span> Spots Left</div>
+            </div>
+            <div class="mini-stats" style="margin-top:12px;">
+              <div class="mini-stat"><span id="topTeamsLeft">24</span> Top Teams Left</div>
+              <div class="mini-stat"><span id="bottomTeamsLeft">24</span> Bottom Teams Left</div>
+            </div>
+            <p class="status-copy" id="liveStatus">Entries are loading…</p>
+            <p class="status-copy" id="fairDrawCopy">Fair draw: every spin only uses teams that are still available live.</p>
+          </div>
+        </div>
+
+        <div class="draw-card hidden" id="spinStep">
+          <h3>Spin For Your Teams</h3>
+          <p class="enter-copy" id="spinIntro">Spin the top wheel first, then the bottom wheel.</p>
+
+          <div class="draw-grid">
+            <div class="wheel-card">
+              <div class="wheel-topline">Top 24 Team</div>
+              <div class="mini-pointer"></div>
+              <div class="mini-wheel" id="topWheel" aria-hidden="true"></div>
+              <div class="spin-result" id="topResult" aria-live="polite">Your Top 24 team will appear here</div>
+              <p class="status-copy" id="topRemainingCopy">24 top teams still available.</p>
+              <div class="spin-actions">
+                <button class="btn primary" id="spinTopBtn" type="button">Spin Top Team</button>
+              </div>
+            </div>
+
+            <div class="wheel-card">
+              <div class="wheel-topline">Bottom 24 Team</div>
+              <div class="mini-pointer"></div>
+              <div class="mini-wheel" id="bottomWheel" aria-hidden="true"></div>
+              <div class="spin-result" id="bottomResult" aria-live="polite">Your Bottom 24 team will appear here</div>
+              <p class="status-copy" id="bottomRemainingCopy">24 bottom teams still available.</p>
+              <div class="spin-actions">
+                <button class="btn primary" id="spinBottomBtn" type="button" disabled>Spin Bottom Team</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="draw-card hidden" id="resultStep" style="margin-top:20px;">
+          <div class="eyebrow">Your Result</div>
+          <h2 class="result-title">Your Teams Are In</h2>
+          <div class="result-grid">
+            <div class="result-box">
+              <div class="result-label">Top 24 Team</div>
+              <div class="result-value" id="finalTopTeam">-</div>
+            </div>
+            <div class="result-box">
+              <div class="result-label">Bottom 24 Team</div>
+              <div class="result-value" id="finalBottomTeam">-</div>
+            </div>
+          </div>
+          <div class="result-odds">
+            <div class="result-odds-label">Estimated win chance</div>
+            <div class="result-odds-value" id="finalWinOdds">-</div>
+            <div class="result-odds-copy" id="finalWinOddsCopy">Based on your two teams compared with the rest of the draw.</div>
+          </div>
+          <p class="result-summary" id="resultSummary">Spin both wheels to reveal your teams.</p>
+          <div class="modal-actions">
+            <button class="btn secondary" id="copyResultBtn" type="button">Copy Result</button>
+            <button class="btn ghost" id="shareResultBtn" type="button">Share Result</button>
+            <button class="btn ghost" id="doneBtn" type="button">Done</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel entries-card hidden" id="entriesPanel">
+        <div class="eyebrow">Saved Entries</div>
+        <h3>Recent Draws</h3>
+        <p class="enter-copy" style="margin-bottom:0;">Latest completed entries are shown below. If Supabase is connected, everyone sees the same list.</p>
+        <div class="entries-list" id="entriesList"></div>
+      </section>
+
+      <section class="panel hidden" id="adminPanel">
+        <div class="eyebrow">Admin</div>
+        <h3>Manage Payments</h3>
+        <p class="enter-copy">Mark players as paid to update the live prize pool. Admin access auto-locks after 10 minutes.</p>
+        <div class="admin-security-note" id="adminSecurityNote">
+          <strong>Admin security</strong>
+          <p id="adminSecurityCopy">This file is currently using direct browser admin actions. For proper lock-down, connect admin updates and deletes to a protected backend or edge function.</p>
+        </div>
+        <div class="mini-stats" id="adminSummary">
+          <div class="mini-stat"><span id="adminTotalCount">0</span> Total Entries</div>
+          <div class="mini-stat"><span id="adminPaidCount">0</span> Paid</div>
+          <div class="mini-stat"><span id="adminUnpaidCount">0</span> Unpaid</div>
+          <div class="mini-stat">£<span id="adminPaidAmount">0</span> Collected</div>
+        </div>
+        <div class="board-toolbar" style="margin-top:16px;max-width:100%;">
+          <div class="search-field">
+            <input id="adminSearch" type="text" placeholder="Search admin entries" autocomplete="off">
+          </div>
+          <div class="search-field">
+            <select id="adminFilter">
+              <option value="all">Show: All entries</option>
+              <option value="paid">Show: Paid only</option>
+              <option value="unpaid">Show: Unpaid only</option>
+            </select>
+          </div>
+          <div class="search-meta" id="adminMeta">0 entries</div>
+        </div>
+        <div class="entries-list" id="adminList"></div>
+        <div class="admin-actions">
+          <button class="btn secondary" id="exportCsvBtn" type="button">Export CSV</button>
+          <button class="btn ghost" id="closeAdminBtn" type="button">Close Admin</button>
+          <button class="btn ghost" id="logoutAdminBtn" type="button">Admin Log Out</button>
+          <button class="btn ghost" id="resetTournamentBtn" type="button">Reset Tournament</button>
+          <button class="btn danger" id="resetLocalBtn" type="button">Clear Local Cache</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const MAX_PLAYERS = 24;
+      const ENTRY_PRICE_PER_TEAM = 1;
+      const TEAMS_PER_PLAYER = 2;
+      const SPIN_DURATION = 4800;
+      const ADMIN_PASSWORD = '274312';
+      const ADMIN_SESSION_KEY = 'worldCupAdminSessionV1';
+      const ADMIN_FAILED_KEY = 'worldCupAdminFailedAttemptsV1';
+      const ADMIN_SESSION_MS = 10 * 60 * 1000;
+      const ADMIN_LOCKOUT_MS = 60 * 1000;
+      const STORAGE_KEY = 'worldCupDrawEntriesV3';
+      const DEVICE_ID_KEY = 'worldCupDrawDeviceIdV1';
+      const SUPABASE_URL = 'https://pbniajrjentafjxvbjwv.supabase.co';
+      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBibmlhanJqZW50YWZqeHZiand2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMTAyNzksImV4cCI6MjA4OTg4NjI3OX0.pWP7ancNoaq8Luw9X2K7AgUGdsYLpjHYjQX7OW_nvdI';
+      const ADMIN_API_BASE = '';
+      const SECURE_ADMIN_ENABLED = Boolean(ADMIN_API_BASE);
+
+      const TEAM_POOLS = {
+        top: [
+          { name: 'Argentina', flag: '🇦🇷' }, { name: 'Brazil', flag: '🇧🇷' }, { name: 'France', flag: '🇫🇷' },
+          { name: 'Spain', flag: '🇪🇸' }, { name: 'England', flag: '🏴' }, { name: 'Portugal', flag: '🇵🇹' },
+          { name: 'Germany', flag: '🇩🇪' }, { name: 'Netherlands', flag: '🇳🇱' }, { name: 'Belgium', flag: '🇧🇪' },
+          { name: 'Croatia', flag: '🇭🇷' }, { name: 'Uruguay', flag: '🇺🇾' }, { name: 'Colombia', flag: '🇨🇴' },
+          { name: 'Morocco', flag: '🇲🇦' }, { name: 'Switzerland', flag: '🇨🇭' }, { name: 'Japan', flag: '🇯🇵' },
+          { name: 'USA', flag: '🇺🇸' }, { name: 'Mexico', flag: '🇲🇽' }, { name: 'Senegal', flag: '🇸🇳' },
+          { name: 'IR Iran', flag: '🇮🇷' }, { name: 'Korea Republic', flag: '🇰🇷' }, { name: 'Australia', flag: '🇦🇺' },
+          { name: 'Ecuador', flag: '🇪🇨' }, { name: 'Austria', flag: '🇦🇹' }, { name: 'Norway', flag: '🇳🇴' }
+        ],
+        bottom: [
+          { name: 'Canada', flag: '🇨🇦' }, { name: 'Panama', flag: '🇵🇦' }, { name: 'Haiti', flag: '🇭🇹' },
+          { name: 'Curaçao', flag: '🇨🇼' }, { name: 'Paraguay', flag: '🇵🇾' }, { name: 'Algeria', flag: '🇩🇿' },
+          { name: 'Tunisia', flag: '🇹🇳' }, { name: "Côte d'Ivoire", flag: '🇨🇮' }, { name: 'South Africa', flag: '🇿🇦' },
+          { name: 'Egypt', flag: '🇪🇬' }, { name: 'Ghana', flag: '🇬🇭' }, { name: 'Cabo Verde', flag: '🇨🇻' },
+          { name: 'DR Congo', flag: '🇨🇩' }, { name: 'Qatar', flag: '🇶🇦' }, { name: 'Saudi Arabia', flag: '🇸🇦' },
+          { name: 'Jordan', flag: '🇯🇴' }, { name: 'Uzbekistan', flag: '🇺🇿' }, { name: 'Iraq', flag: '🇮🇶' },
+          { name: 'New Zealand', flag: '🇳🇿' }, { name: 'Scotland', flag: '🏴' }, { name: 'Sweden', flag: '🇸🇪' },
+          { name: 'Czech Republic', flag: '🇨🇿' }, { name: 'Turkey', flag: '🇹🇷' }, { name: 'Bosnia and Herzegovina', flag: '🇧🇦' }
+        ]
+      };
+
+      const TOP_TEAMS = TEAM_POOLS.top;
+      const BOTTOM_TEAMS = TEAM_POOLS.bottom;
+      const TEAM_TITLE_ODDS = buildTeamTitleOdds();
+
+      function normalizeTeamKey(name) {
+        return String(name || '').trim().toLowerCase();
+      }
+
+      function buildWeightedMap(sourceTeams) {
+        return sourceTeams.reduce((map, team, index) => {
+          const key = normalizeTeamKey(team.name);
+          const rank = index + 1;
+          map[key] = Math.max(0.12, (sourceTeams.length - index) * (sourceTeams === TOP_TEAMS ? 2.6 : 1.15));
+          map[key] = map[key] + (sourceTeams === TOP_TEAMS ? 20 - (rank * 0.18) : 0);
+          return map;
+        }, {});
+      }
+
+      function buildTeamTitleOdds() {
+        const combinedWeights = {
+          ...buildWeightedMap(TOP_TEAMS),
+          ...buildWeightedMap(BOTTOM_TEAMS)
+        };
+        const totalWeight = Object.values(combinedWeights).reduce((sum, value) => sum + value, 0);
+
+        return Object.entries(combinedWeights).reduce((map, [key, value]) => {
+          map[key] = (value / totalWeight) * 100;
+          return map;
+        }, {});
+      }
+
+      function getTeamWeight(pool, teamName) {
+        const source = pool === 'top' ? TOP_TEAMS : BOTTOM_TEAMS;
+        const index = source.findIndex((team) => normalizeTeamKey(team.name) === normalizeTeamKey(teamName));
+        if (index === -1) return 0;
+        return Math.max(0.1, source.length - index);
+      }
+
+      function getTeamTitleOdds(teamName) {
+        return TEAM_TITLE_ODDS[normalizeTeamKey(teamName)] || 0;
+      }
+
+      function getEntryWinOdds(entry) {
+        if (!entry || !entry.topTeam || !entry.bottomTeam) return 0;
+        return getTeamTitleOdds(entry.topTeam.name) + getTeamTitleOdds(entry.bottomTeam.name);
+      }
+
+      function formatOdds(value) {
+        const safeValue = Math.max(0, Math.min(100, Number(value) || 0));
+        return `${safeValue.toFixed(1)}%`;
+      }
+
+      function getOddsSummary(entry) {
+        const odds = getEntryWinOdds(entry);
+        if (odds >= 11) return 'A title-favourite draw with two genuinely live teams.';
+        if (odds >= 8) return 'A very strong draw that should be right near the top.';
+        if (odds >= 5) return 'A good draw with enough strength to threaten.';
+        if (odds >= 3) return 'An outside shot that still has a route.';
+        return 'Needs a miracle run, but that is the fun of it.';
+      }
+
+      function getOddsTag(entry) {
+        const odds = getEntryWinOdds(entry);
+        if (odds >= 11) return { label: 'Favourite', className: 'favourite' };
+        if (odds >= 5) return { label: 'Dark horse', className: 'darkhorse' };
+        return { label: 'Outsider', className: 'outsider' };
+      }
+
+      function getOddsFillWidth(entry) {
+        const odds = getEntryWinOdds(entry);
+        return Math.max(8, Math.min(100, (odds / 14) * 100));
+      }
+
+      const supabase = window.supabase?.createClient
+        ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+        : null;
+
+      const els = {
+        howItWorksBtn: document.getElementById('howItWorksBtn'),
+        enterDrawBtn: document.getElementById('enterDrawBtn'),
+        howOverlay: document.getElementById('howItWorksOverlay'),
+        closeOverlayBtn: document.getElementById('closeOverlayBtn'),
+        modalEnterBtn: document.getElementById('modalEnterBtn'),
+        enterOverlay: document.getElementById('enterOverlay'),
+        closeEnterBtn: document.getElementById('closeEnterBtn'),
+        startSpinsBtn: document.getElementById('startSpinsBtn'),
+        entryStep: document.getElementById('entryStep'),
+        spinStep: document.getElementById('spinStep'),
+        resultStep: document.getElementById('resultStep'),
+        fullName: document.getElementById('fullName'),
+        nickName: document.getElementById('nickName'),
+        formError: document.getElementById('formError'),
+        spinIntro: document.getElementById('spinIntro'),
+        topWheel: document.getElementById('topWheel'),
+        bottomWheel: document.getElementById('bottomWheel'),
+        topResult: document.getElementById('topResult'),
+        bottomResult: document.getElementById('bottomResult'),
+        finalTopTeam: document.getElementById('finalTopTeam'),
+        finalBottomTeam: document.getElementById('finalBottomTeam'),
+        finalWinOdds: document.getElementById('finalWinOdds'),
+        finalWinOddsCopy: document.getElementById('finalWinOddsCopy'),
+        resultSummary: document.getElementById('resultSummary'),
+        spinTopBtn: document.getElementById('spinTopBtn'),
+        spinBottomBtn: document.getElementById('spinBottomBtn'),
+        doneBtn: document.getElementById('doneBtn'),
+        entriesPanel: document.getElementById('entriesPanel'),
+        entriesList: document.getElementById('entriesList'),
+        toast: document.getElementById('toast'),
+        spotCount: document.getElementById('spotCount'),
+        playerCount: document.getElementById('playerCount'),
+        prizePool: document.getElementById('prizePool'),
+        spotsLeft: document.getElementById('spotsLeft'),
+        syncStatus: document.getElementById('syncStatus'),
+        liveStatus: document.getElementById('liveStatus'),
+        fairDrawCopy: document.getElementById('fairDrawCopy'),
+        topTeamsLeft: document.getElementById('topTeamsLeft'),
+        bottomTeamsLeft: document.getElementById('bottomTeamsLeft'),
+        topRemainingCopy: document.getElementById('topRemainingCopy'),
+        bottomRemainingCopy: document.getElementById('bottomRemainingCopy'),
+        installAppBtn: document.getElementById('installAppBtn'),
+        adminBtn: document.getElementById('adminBtn'),
+        adminPanel: document.getElementById('adminPanel'),
+        adminList: document.getElementById('adminList'),
+        closeAdminBtn: document.getElementById('closeAdminBtn'),
+        resetTournamentBtn: document.getElementById('resetTournamentBtn'),
+        resetLocalBtn: document.getElementById('resetLocalBtn'),
+        logoutAdminBtn: document.getElementById('logoutAdminBtn'),
+        playerSearch: document.getElementById('playerSearch'),
+        playerSearchMeta: document.getElementById('playerSearchMeta'),
+        boardSort: document.getElementById('boardSort'),
+        boardFilter: document.getElementById('boardFilter'),
+        boardLastUpdated: document.getElementById('boardLastUpdated'),
+        boardLeaderCard: document.getElementById('boardLeaderCard'),
+        boardLeaderValue: document.getElementById('boardLeaderValue'),
+        boardLeaderNote: document.getElementById('boardLeaderNote'),
+        boardLeaderBadge: document.getElementById('boardLeaderBadge'),
+        boardPaidValue: document.getElementById('boardPaidValue'),
+        boardPaidNote: document.getElementById('boardPaidNote'),
+        boardAverageOddsValue: document.getElementById('boardAverageOddsValue'),
+        boardAverageOddsNote: document.getElementById('boardAverageOddsNote'),
+        boardOpenSpotsValue: document.getElementById('boardOpenSpotsValue'),
+        boardOpenSpotsNote: document.getElementById('boardOpenSpotsNote'),
+        publicBoardList: document.getElementById('publicBoardList'),
+        topTrackerCount: document.getElementById('topTrackerCount'),
+        bottomTrackerCount: document.getElementById('bottomTrackerCount'),
+        topTrackerProgress: document.getElementById('topTrackerProgress'),
+        bottomTrackerProgress: document.getElementById('bottomTrackerProgress'),
+        topTrackerTakenStat: document.getElementById('topTrackerTakenStat'),
+        bottomTrackerTakenStat: document.getElementById('bottomTrackerTakenStat'),
+        topTrackerOpenStat: document.getElementById('topTrackerOpenStat'),
+        bottomTrackerOpenStat: document.getElementById('bottomTrackerOpenStat'),
+        topTrackerHotStat: document.getElementById('topTrackerHotStat'),
+        bottomTrackerHotStat: document.getElementById('bottomTrackerHotStat'),
+        topTakenLabel: document.getElementById('topTakenLabel'),
+        bottomTakenLabel: document.getElementById('bottomTakenLabel'),
+        topAvailableLabel: document.getElementById('topAvailableLabel'),
+        bottomAvailableLabel: document.getElementById('bottomAvailableLabel'),
+        topTrackerCopy: document.getElementById('topTrackerCopy'),
+        bottomTrackerCopy: document.getElementById('bottomTrackerCopy'),
+        topTrackerList: document.getElementById('topTrackerList'),
+        bottomTrackerList: document.getElementById('bottomTrackerList'),
+        topTrackerAvailableList: document.getElementById('topTrackerAvailableList'),
+        bottomTrackerAvailableList: document.getElementById('bottomTrackerAvailableList'),
+        topBestNote: document.getElementById('topBestNote'),
+        bottomBestNote: document.getElementById('bottomBestNote'),
+        topTakenPanel: document.getElementById('topTakenPanel'),
+        topAvailablePanel: document.getElementById('topAvailablePanel'),
+        bottomTakenPanel: document.getElementById('bottomTakenPanel'),
+        bottomAvailablePanel: document.getElementById('bottomAvailablePanel'),
+        copyResultBtn: document.getElementById('copyResultBtn'),
+        shareResultBtn: document.getElementById('shareResultBtn'),
+        adminSearch: document.getElementById('adminSearch'),
+        adminFilter: document.getElementById('adminFilter'),
+        adminMeta: document.getElementById('adminMeta'),
+        adminTotalCount: document.getElementById('adminTotalCount'),
+        adminPaidCount: document.getElementById('adminPaidCount'),
+        adminUnpaidCount: document.getElementById('adminUnpaidCount'),
+        adminPaidAmount: document.getElementById('adminPaidAmount'),
+        exportCsvBtn: document.getElementById('exportCsvBtn'),
+        fullLockBanner: document.getElementById('fullLockBanner'),
+        adminSecurityCopy: document.getElementById('adminSecurityCopy')
+      };
+
+      function getOrCreateDeviceId() {
+        try {
+          const existingId = localStorage.getItem(DEVICE_ID_KEY);
+          if (existingId) return existingId;
+          const nextId = window.crypto?.randomUUID ? window.crypto.randomUUID() : `device-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+          localStorage.setItem(DEVICE_ID_KEY, nextId);
+          return nextId;
+        } catch {
+          return window.crypto?.randomUUID ? window.crypto.randomUUID() : `device-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        }
+      }
+
+      const state = {
+        name: '',
+        nickname: '',
+        topTeam: null,
+        bottomTeam: null,
+        isTopDone: false,
+        isBottomDone: false,
+        isSpinning: false,
+        entries: loadLocalEntries(),
+        lastFocusedElement: null,
+        toastTimer: null,
+        useRemote: Boolean(supabase),
+        remoteSupportsDeviceId: true,
+        deviceId: getOrCreateDeviceId(),
+        linkedEntry: null,
+        adminOpen: false,
+        adminAuthenticated: false,
+        adminSessionExpiresAt: 0,
+        syncChannel: null,
+        refreshTimer: null,
+        isFetchingRemote: false,
+        lastRemoteSyncAt: null,
+        selectedBoardEntryId: null,
+        deferredInstallPrompt: null,
+        secureAdminEnabled: SECURE_ADMIN_ENABLED,
+        trackerSections: {
+          topTaken: true,
+          topAvailable: true,
+          bottomTaken: true,
+          bottomAvailable: true
+        },
+        lastTakenTeams: {
+          top: '',
+          bottom: ''
+        },
+        previousLeaderId: ''
+      };
+
+      loadAdminSession();
+
+      function loadLocalEntries() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function persistLocalEntries() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
+      }
+
+
+      function loadAdminSession() {
+        try {
+          const raw = localStorage.getItem(ADMIN_SESSION_KEY);
+          if (!raw) return;
+          const parsed = JSON.parse(raw);
+          const expiresAt = Number(parsed?.expiresAt || 0);
+          if (expiresAt > Date.now()) {
+            state.adminAuthenticated = true;
+            state.adminSessionExpiresAt = expiresAt;
+            return;
+          }
+        } catch {}
+        clearAdminSession(false);
+      }
+
+      function saveAdminSession() {
+        state.adminAuthenticated = true;
+        state.adminSessionExpiresAt = Date.now() + ADMIN_SESSION_MS;
+        localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ expiresAt: state.adminSessionExpiresAt }));
+      }
+
+      function clearAdminSession(closePanel = true) {
+        state.adminAuthenticated = false;
+        state.adminSessionExpiresAt = 0;
+        localStorage.removeItem(ADMIN_SESSION_KEY);
+        if (closePanel && state.adminOpen) {
+          state.adminOpen = false;
+          els.adminPanel.classList.add('hidden');
+          els.entryStep.classList.remove('hidden');
+          renderEntries();
+        }
+      }
+
+      function getAdminLockoutUntil() {
+        try {
+          const raw = localStorage.getItem(ADMIN_FAILED_KEY);
+          const parsed = raw ? JSON.parse(raw) : null;
+          return Number(parsed?.lockoutUntil || 0);
+        } catch {
+          return 0;
+        }
+      }
+
+      function getAdminFailedAttempts() {
+        try {
+          const raw = localStorage.getItem(ADMIN_FAILED_KEY);
+          const parsed = raw ? JSON.parse(raw) : null;
+          return Number(parsed?.count || 0);
+        } catch {
+          return 0;
+        }
+      }
+
+      function setAdminFailedAttempts(count, lockoutUntil = 0) {
+        localStorage.setItem(ADMIN_FAILED_KEY, JSON.stringify({ count, lockoutUntil }));
+      }
+
+      function clearAdminFailedAttempts() {
+        localStorage.removeItem(ADMIN_FAILED_KEY);
+      }
+
+      function isAdminSessionValid() {
+        if (!state.adminAuthenticated) return false;
+        if (state.adminSessionExpiresAt <= Date.now()) {
+          clearAdminSession(true);
+          showToast('Admin session expired. Sign in again.');
+          return false;
+        }
+        return true;
+      }
+
+      function touchAdminSession() {
+        if (!state.adminAuthenticated) return;
+        saveAdminSession();
+      }
+
+      function requireAdminPassword(actionLabel = 'open admin') {
+        const now = Date.now();
+        const lockoutUntil = getAdminLockoutUntil();
+        if (lockoutUntil > now) {
+          const secondsLeft = Math.ceil((lockoutUntil - now) / 1000);
+          alert(`Admin is locked for ${secondsLeft}s after too many wrong passwords.`);
+          return false;
+        }
+
+        const password = prompt(`Enter admin password to ${actionLabel}`);
+        if (password === null) return false;
+
+        if (password !== ADMIN_PASSWORD) {
+          const nextCount = getAdminFailedAttempts() + 1;
+          const nextLockout = nextCount >= 5 ? now + ADMIN_LOCKOUT_MS : 0;
+          setAdminFailedAttempts(nextCount, nextLockout);
+          alert(nextLockout ? 'Too many wrong passwords. Admin is locked for 60 seconds.' : 'Wrong password');
+          return false;
+        }
+
+        clearAdminFailedAttempts();
+        saveAdminSession();
+        return true;
+      }
+
+      function ensureAdminAccess(actionLabel = 'open admin', options = {}) {
+        const { reauth = false } = options;
+        if (!reauth && isAdminSessionValid()) {
+          touchAdminSession();
+          return true;
+        }
+        return requireAdminPassword(actionLabel);
+      }
+
+      function showToast(message) {
+        els.toast.textContent = message;
+        els.toast.classList.add('show');
+        clearTimeout(state.toastTimer);
+        state.toastTimer = window.setTimeout(() => {
+          els.toast.classList.remove('show');
+        }, 2600);
+      }
+
+      function setButtonBusy(button, busy, busyText = 'Loading...') {
+        if (!button) return;
+
+        if (busy) {
+          if (!button.dataset.originalText) {
+            button.dataset.originalText = button.textContent;
+          }
+          button.textContent = busyText;
+          button.classList.add('loading');
+          button.disabled = true;
+          return;
+        }
+
+        if (button.dataset.originalText) {
+          button.textContent = button.dataset.originalText;
+        }
+        button.classList.remove('loading');
+      }
+
+      function sanitizeText(value, maxLength) {
+        return String(value).replace(/\s+/g, ' ').trim().slice(0, maxLength);
+      }
+
+      function lockBody() { document.body.style.overflow = 'hidden'; }
+      function unlockBody() { document.body.style.overflow = ''; }
+      function getOpenOverlay() { return document.querySelector('.overlay.show'); }
+
+      function openOverlay(overlay, focusTarget) {
+        state.lastFocusedElement = document.activeElement;
+        overlay.classList.add('show');
+        lockBody();
+        const target = focusTarget || overlay.querySelector('button, input, [tabindex]:not([tabindex="-1"])');
+        if (target) requestAnimationFrame(() => target.focus());
+      }
+
+      function closeOverlay(overlay) {
+        overlay.classList.remove('show');
+        if (!getOpenOverlay()) {
+          unlockBody();
+          if (state.lastFocusedElement && typeof state.lastFocusedElement.focus === 'function') {
+            state.lastFocusedElement.focus();
+          }
+        }
+      }
+
+      function randomIndex(max) {
+        const randomValues = new Uint32Array(1);
+        window.crypto.getRandomValues(randomValues);
+        return randomValues[0] % max;
+      }
+
+      function cloneTeams(pool) {
+        return TEAM_POOLS[pool].map(team => ({ ...team }));
+      }
+
+      function getUsedTeamNames(pool, entries = state.entries) {
+        return entries
+          .map((entry) => pool === 'top' ? entry?.topTeam?.name : entry?.bottomTeam?.name)
+          .filter(Boolean);
+      }
+
+      function getAvailableTeams(pool, options = {}) {
+        const { excludeNames = [] } = options;
+        const usedNames = new Set(getUsedTeamNames(pool));
+        excludeNames.filter(Boolean).forEach((name) => usedNames.add(name));
+        const source = pool === 'top' ? TOP_TEAMS : BOTTOM_TEAMS;
+        return source.filter((team) => !usedNames.has(team.name)).map((team) => ({ ...team }));
+      }
+
+      function spinWheel(element, totalSegments, selectedIndex) {
+        const segmentAngle = 360 / totalSegments;
+        const targetAngle = 360 - (selectedIndex * segmentAngle) - (segmentAngle / 2);
+        const extraTurns = 360 * (5 + Math.floor(Math.random() * 2));
+        const currentRotation = Number(element.dataset.rotation || 0);
+        const finalRotation = currentRotation + extraTurns + targetAngle;
+        element.style.transform = `rotate(${finalRotation}deg)`;
+        element.dataset.rotation = String(finalRotation);
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function setSyncStatus(text, tone) {
+        els.syncStatus.textContent = text;
+        els.liveStatus.textContent = text;
+        els.liveStatus.className = `status-copy ${tone || ''}`.trim();
+      }
+
+      function queueRemoteRefresh(delay = 250) {
+        if (!state.useRemote) return;
+        window.clearTimeout(state.refreshTimer);
+        state.refreshTimer = window.setTimeout(() => {
+          fetchRemoteEntries({ silent: true });
+        }, delay);
+      }
+
+      function getPaidCount(entries = state.entries) {
+        return entries.filter(entry => entry.paid).length;
+      }
+
+      function isTournamentFull() {
+        return state.entries.length >= MAX_PLAYERS;
+      }
+
+      function updateEntryAvailability() {
+        const full = isTournamentFull();
+        const linked = Boolean(state.linkedEntry);
+
+        els.enterDrawBtn.disabled = !linked && full;
+        els.modalEnterBtn.disabled = !linked && full;
+        els.startSpinsBtn.disabled = full || linked;
+        els.fullName.disabled = full || linked;
+        els.nickName.disabled = full || linked;
+        if (els.howItWorksBtn) {
+          els.howItWorksBtn.hidden = linked;
+        }
+        if (els.fullLockBanner) {
+          els.fullLockBanner.classList.toggle('show', full && !linked);
+        }
+        if (els.adminSecurityCopy) {
+          els.adminSecurityCopy.textContent = state.secureAdminEnabled
+            ? 'Secure admin mode is active. Admin updates are expected to run through your protected backend.'
+            : 'This file is still using direct browser admin actions. For proper lock-down, connect admin updates and deletes to a protected backend or edge function.';
+        }
+
+        if (linked) {
+          els.enterDrawBtn.textContent = 'View My Draw';
+          els.modalEnterBtn.textContent = 'View My Draw';
+          els.liveStatus.textContent = `This device is already linked to ${state.linkedEntry.name} (${state.linkedEntry.nickname}). You can still copy or share the saved result.`;
+          if (!state.isTopDone && !state.isBottomDone) {
+            setFormError('This device already has a saved draw. Use View My Draw instead.');
+          }
+          return;
+        }
+
+        els.enterDrawBtn.textContent = full ? 'Tournament Full' : 'Enter Draw';
+        els.modalEnterBtn.textContent = full ? 'Tournament Full' : 'Enter Tournament';
+
+        if (full) {
+          if (!state.isTopDone && !state.isBottomDone) {
+            setFormError('Tournament full. No more entries can be added right now.');
+          }
+          els.liveStatus.textContent = 'Tournament full. Entries are now closed.';
+        }
+      }
+
+      function updateStats() {
+        const players = state.entries.length;
+        const paidCount = getPaidCount();
+        const prizePoolAmount = paidCount * ENTRY_PRICE_PER_TEAM * TEAMS_PER_PLAYER;
+        const spotsLeft = Math.max(0, MAX_PLAYERS - players);
+
+        els.playerCount.textContent = `${players} ${players === 1 ? 'Player' : 'Players'} Entered`;
+        els.prizePool.textContent = `£${prizePoolAmount} Prize Pool`;
+        els.spotsLeft.textContent = `${spotsLeft} Spots Left`;
+        els.spotCount.textContent = String(spotsLeft);
+      }
+
+      function findEntryForCurrentDevice(entries = state.entries) {
+        return entries.find(entry => entry && entry.deviceId && String(entry.deviceId) === String(state.deviceId)) || null;
+      }
+
+      function refreshDeviceLinkState() {
+        state.linkedEntry = findEntryForCurrentDevice();
+      }
+
+      function showLinkedEntry(entry = state.linkedEntry, options = {}) {
+        const { openIfNeeded = false } = options;
+        if (!entry) return;
+
+        state.name = entry.name;
+        state.nickname = entry.nickname;
+        state.topTeam = { ...entry.topTeam };
+        state.bottomTeam = { ...entry.bottomTeam };
+        state.isTopDone = true;
+        state.isBottomDone = true;
+
+        els.entryStep.classList.add('hidden');
+        els.spinStep.classList.add('hidden');
+        els.resultStep.classList.remove('hidden');
+        const winOdds = getEntryWinOdds(entry);
+        els.finalTopTeam.textContent = `${entry.topTeam.flag} ${entry.topTeam.name}`;
+        els.finalBottomTeam.textContent = `${entry.bottomTeam.flag} ${entry.bottomTeam.name}`;
+        els.finalWinOdds.textContent = formatOdds(winOdds);
+        els.finalWinOddsCopy.textContent = getOddsSummary(entry);
+        els.resultSummary.textContent = `Welcome back ${entry.name} (${entry.nickname}). This device is already linked to ${entry.topTeam.name} and ${entry.bottomTeam.name}.`;
+        setFormError('');
+        if (openIfNeeded && !els.enterOverlay.classList.contains('show')) {
+          openOverlay(els.enterOverlay, els.closeEnterBtn);
+        }
+      }
+
+      function getFilteredBoardEntries() {
+        const query = sanitizeText(els.playerSearch?.value || '', 80).toLowerCase();
+        const sortValue = els.boardSort?.value || 'odds';
+        const filterValue = els.boardFilter?.value || 'all';
+
+        let filtered = state.entries.slice().filter((entry) => {
+          if (filterValue === 'paid') return Boolean(entry.paid);
+          if (filterValue === 'unpaid') return !entry.paid;
+          return true;
+        });
+
+        if (query) {
+          filtered = filtered.filter((entry) => {
+            const haystack = [
+              entry.name,
+              entry.nickname,
+              entry.topTeam?.name,
+              entry.bottomTeam?.name
+            ].join(' ').toLowerCase();
+            return haystack.includes(query);
+          });
+        }
+
+        filtered.sort((a, b) => {
+          if (sortValue === 'newest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+          if (sortValue === 'oldest') return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+          if (sortValue === 'name') return String(a.name || '').localeCompare(String(b.name || ''));
+          const oddsDiff = getEntryWinOdds(b) - getEntryWinOdds(a);
+          if (Math.abs(oddsDiff) > 0.001) return oddsDiff;
+          if (a.deviceId && String(a.deviceId) === String(state.deviceId)) return -1;
+          if (b.deviceId && String(b.deviceId) === String(state.deviceId)) return 1;
+          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+
+        return filtered;
+      }
+
+      function getBoardEntryId(entry, fallbackIndex = 0) {
+        return String(entry?.id ?? entry?.deviceId ?? `${entry?.name || 'player'}-${entry?.nickname || 'entry'}-${fallbackIndex}`);
+      }
+
+      function renderFullBoardCard(entry, index) {
+        const isYou = entry.deviceId && String(entry.deviceId) === String(state.deviceId);
+        const winOdds = getEntryWinOdds(entry);
+        const oddsSummary = getOddsSummary(entry);
+        const oddsTag = getOddsTag(entry);
+        const oddsFill = getOddsFillWidth(entry);
+        return `
+          <article class="board-card ${isYou ? 'you' : ''}">
+            <div class="board-card-top">
+              <div class="board-name">
+                <strong>${escapeHtml(entry.name)}</strong>
+                <span>@${escapeHtml(entry.nickname)}</span>
+                ${isYou ? '<div class="you-chip">You</div>' : ''}
+              </div>
+              <div class="board-rank">#${index + 1}</div>
+            </div>
+
+            <div class="board-teams">
+              <div class="team-chip">
+                <span class="team-chip-label">Top 24</span>
+                <span class="team-chip-value">${escapeHtml(entry.topTeam.flag)} ${escapeHtml(entry.topTeam.name)}</span>
+              </div>
+              <div class="team-chip">
+                <span class="team-chip-label">Bottom 24</span>
+                <span class="team-chip-value">${escapeHtml(entry.bottomTeam.flag)} ${escapeHtml(entry.bottomTeam.name)}</span>
+              </div>
+            </div>
+
+            <div class="odds-strip">
+              <div class="odds-strip-head">
+                <div class="odds-copy">
+                  <span class="odds-label">Estimated win chance</span>
+                  <strong class="odds-value">${formatOdds(winOdds)}</strong>
+                  <span class="odds-note">${escapeHtml(oddsSummary)}</span>
+                </div>
+                <span class="odds-badge ${oddsTag.className}">${escapeHtml(oddsTag.label)}</span>
+              </div>
+              <div class="odds-meter" aria-hidden="true">
+                <div class="odds-meter-fill" style="--odds-width:${oddsFill.toFixed(1)}%"></div>
+              </div>
+            </div>
+
+            <div class="board-card-meta">
+              <span class="board-meta-pill">Joined ${escapeHtml(formatShortDate(entry.createdAt))}</span>
+              <span class="board-meta-pill">Top rating ${escapeHtml(String(Math.round(getTeamWeight('top', entry.topTeam?.name || '') * 10) / 10))}</span>
+              <span class="board-meta-pill">Bottom rating ${escapeHtml(String(Math.round(getTeamWeight('bottom', entry.bottomTeam?.name || '') * 10) / 10))}</span>
+            </div>
+
+            <div class="board-footer">
+              <span class="payment-pill ${entry.paid ? 'paid' : 'unpaid'}">${entry.paid ? 'Paid in' : 'Waiting for payment'}</span>
+            </div>
+          </article>
+        `;
+      }
+
+      function renderCompactBoardRow(entry, index) {
+        const entryId = getBoardEntryId(entry, index);
+        const isExpanded = state.selectedBoardEntryId === entryId;
+        return `
+          <div class="board-stack">
+            <button class="board-compact" type="button" data-board-entry-toggle="${escapeHtml(entryId)}" aria-expanded="${isExpanded ? 'true' : 'false'}">
+              <div class="board-compact-main">
+                <span class="board-compact-rank">#${index + 1}</span>
+                <span class="board-compact-name">
+                  <strong>${escapeHtml(entry.name)}</strong>
+                  <span>@${escapeHtml(entry.nickname)}</span>
+                </span>
+              </div>
+              <span class="board-compact-meta">
+                <span class="board-compact-odds">${formatOdds(getEntryWinOdds(entry))}</span>
+                <span class="board-compact-arrow">⌄</span>
+              </span>
+            </button>
+            ${isExpanded ? `<div class="board-card-detail">${renderFullBoardCard(entry, index)}</div>` : ''}
+          </div>
+        `;
+      }
+
+
+      function formatLastUpdated(value) {
+        if (!value) return 'Last updated: waiting for live sync…';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return 'Last updated: just now';
+        return `Last updated: ${date.toLocaleString()}`;
+      }
+
+      function formatShortDate(value) {
+        if (!value) return 'Just joined';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return 'Just joined';
+        return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      }
+
+      function setTrackerPanelState(panelEl, expanded) {
+        if (!panelEl) return;
+        panelEl.classList.toggle('collapsed', !expanded);
+      }
+
+      function toggleTrackerSection(sectionKey) {
+        const map = {
+          'top-taken': ['topTaken', els.topTakenPanel],
+          'top-available': ['topAvailable', els.topAvailablePanel],
+          'bottom-taken': ['bottomTaken', els.bottomTakenPanel],
+          'bottom-available': ['bottomAvailable', els.bottomAvailablePanel]
+        };
+        const target = map[sectionKey];
+        if (!target) return;
+        const [stateKey, panelEl] = target;
+        state.trackerSections[stateKey] = !state.trackerSections[stateKey];
+        setTrackerPanelState(panelEl, state.trackerSections[stateKey]);
+        document.querySelectorAll(`[data-tracker-toggle="${sectionKey}"]`).forEach((button) => {
+          button.setAttribute('aria-expanded', state.trackerSections[stateKey] ? 'true' : 'false');
+        });
+      }
+
+      function renderTeamTracker(pool) {
+        const sourceTeams = pool === 'top' ? TOP_TEAMS : BOTTOM_TEAMS;
+        const usedNames = new Set(getUsedTeamNames(pool));
+        const taken = sourceTeams.filter(team => usedNames.has(team.name));
+        const open = sourceTeams.filter(team => !usedNames.has(team.name));
+
+        const countEl = pool === 'top' ? els.topTrackerCount : els.bottomTrackerCount;
+        const copyEl = pool === 'top' ? els.topTrackerCopy : els.bottomTrackerCopy;
+        const listEl = pool === 'top' ? els.topTrackerList : els.bottomTrackerList;
+        const availableListEl = pool === 'top' ? els.topTrackerAvailableList : els.bottomTrackerAvailableList;
+        const progressEl = pool === 'top' ? els.topTrackerProgress : els.bottomTrackerProgress;
+        const takenStatEl = pool === 'top' ? els.topTrackerTakenStat : els.bottomTrackerTakenStat;
+        const openStatEl = pool === 'top' ? els.topTrackerOpenStat : els.bottomTrackerOpenStat;
+        const hotStatEl = pool === 'top' ? els.topTrackerHotStat : els.bottomTrackerHotStat;
+        const takenLabelEl = pool === 'top' ? els.topTakenLabel : els.bottomTakenLabel;
+        const availableLabelEl = pool === 'top' ? els.topAvailableLabel : els.bottomAvailableLabel;
+
+        if (!countEl || !copyEl || !listEl || !availableListEl) return;
+
+        const latestTaken = state.entries
+          .filter(entry => (pool === 'top' ? entry.topTeam?.name : entry.bottomTeam?.name))
+          .slice()
+          .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+          .find(entry => usedNames.has(pool === 'top' ? entry.topTeam?.name : entry.bottomTeam?.name));
+
+        countEl.textContent = `${taken.length} / ${sourceTeams.length} taken`;
+        copyEl.textContent = taken.length
+          ? `${open.length} still left. Green = best remaining teams.`
+          : `No ${pool} teams taken yet. Every ${pool} team is still live.`;
+
+        if (progressEl) progressEl.style.setProperty('--progress-width', `${(taken.length / sourceTeams.length) * 100}%`);
+        if (takenStatEl) takenStatEl.textContent = String(taken.length);
+        if (openStatEl) openStatEl.textContent = String(open.length);
+        if (hotStatEl) {
+          const latestTeamName = latestTaken ? (pool === 'top' ? latestTaken.topTeam?.name : latestTaken.bottomTeam?.name) : '';
+          hotStatEl.textContent = latestTeamName || 'None';
+        }
+        if (takenLabelEl) takenLabelEl.textContent = `${taken.length} gone`;
+        if (availableLabelEl) availableLabelEl.textContent = `${open.length} left`;
+
+        const latestTeamName = latestTaken ? (pool === 'top' ? latestTaken.topTeam?.name : latestTaken.bottomTeam?.name) : '';
+        const bestAvailable = open[0] || null;
+        const statLiveEl = pool === 'top' ? els.topTrackerHotStat?.parentElement : els.bottomTrackerHotStat?.parentElement;
+        if (statLiveEl) {
+          statLiveEl.classList.toggle('is-live', Boolean(latestTeamName && latestTeamName !== state.lastTakenTeams[pool]));
+        }
+        state.lastTakenTeams[pool] = latestTeamName || state.lastTakenTeams[pool];
+
+        const cardEl = pool === 'top' ? document.getElementById('topTrackerCard') : document.getElementById('bottomTrackerCard');
+        cardEl?.classList.toggle('best-available', Boolean(bestAvailable));
+
+        listEl.innerHTML = taken.length
+          ? taken.map(team => `<span class="team-pill taken ${latestTeamName === team.name ? 'latest' : ''}">${escapeHtml(team.flag)} ${escapeHtml(team.name)}</span>`).join('')
+          : '<span class="team-pill open">None taken yet</span>';
+
+        const featuredNames = new Set(open.slice(0, 4).map(team => team.name));
+        availableListEl.innerHTML = open.length
+          ? open.map((team, index) => `
+            <span class="team-pill available ${featuredNames.has(team.name) ? 'featured' : ''} ${index === 0 ? 'best-pick' : ''}">
+              ${escapeHtml(team.flag)} ${escapeHtml(team.name)}
+            </span>
+          `).join('')
+          : '<span class="team-pill taken">No teams left</span>';
+
+        const bestNoteEl = pool === 'top' ? els.topBestNote : els.bottomBestNote;
+        if (bestNoteEl) {
+          bestNoteEl.textContent = bestAvailable
+            ? `Best available right now: ${bestAvailable.flag} ${bestAvailable.name}`
+            : 'No teams left in this pool.';
+        }
+
+        setTrackerPanelState(els.topTakenPanel, state.trackerSections.topTaken);
+        setTrackerPanelState(els.topAvailablePanel, state.trackerSections.topAvailable);
+        setTrackerPanelState(els.bottomTakenPanel, state.trackerSections.bottomTaken);
+        setTrackerPanelState(els.bottomAvailablePanel, state.trackerSections.bottomAvailable);
+
+        document.querySelectorAll('[data-tracker-toggle]').forEach((button) => {
+          const key = button.getAttribute('data-tracker-toggle');
+          const map = {
+            'top-taken': state.trackerSections.topTaken,
+            'top-available': state.trackerSections.topAvailable,
+            'bottom-taken': state.trackerSections.bottomTaken,
+            'bottom-available': state.trackerSections.bottomAvailable
+          };
+          button.setAttribute('aria-expanded', map[key] ? 'true' : 'false');
+        });
+      }
+
+      function updateRemainingTeamCopy() {
+        const topLeft = getAvailableTeams('top').length;
+        const bottomLeft = getAvailableTeams('bottom').length;
+
+        if (els.topTeamsLeft) els.topTeamsLeft.textContent = String(topLeft);
+        if (els.bottomTeamsLeft) els.bottomTeamsLeft.textContent = String(bottomLeft);
+        if (els.topRemainingCopy) els.topRemainingCopy.textContent = `${topLeft} top teams still available.`;
+        if (els.bottomRemainingCopy) els.bottomRemainingCopy.textContent = `${bottomLeft} bottom teams still available.`;
+        if (els.fairDrawCopy) {
+          els.fairDrawCopy.textContent = `Fair draw: every spin is picked from the live remaining pool only. ${topLeft} top teams and ${bottomLeft} bottom teams are still free.`;
+        }
+        renderTeamTracker('top');
+        renderTeamTracker('bottom');
+      }
+
+      function updateBoardInsights(filteredEntries = state.entries.slice()) {
+        const entries = filteredEntries.slice();
+        const paidCount = entries.filter(entry => entry.paid).length;
+        const averageOdds = entries.length
+          ? entries.reduce((sum, entry) => sum + getEntryWinOdds(entry), 0) / entries.length
+          : 0;
+        const sortedByOdds = entries.slice().sort((a, b) => getEntryWinOdds(b) - getEntryWinOdds(a));
+        const leader = sortedByOdds[0] || null;
+        const openSpots = Math.max(0, MAX_PLAYERS - state.entries.length);
+
+        const leaderId = leader ? getBoardEntryId(leader) : '';
+        if (els.boardLeaderValue) {
+          els.boardLeaderValue.textContent = leader ? `${leader.name} (${formatOdds(getEntryWinOdds(leader))})` : 'Waiting for entries';
+          if (leader && state.previousLeaderId && state.previousLeaderId !== leaderId) {
+            els.boardLeaderValue.style.animation = 'none';
+            void els.boardLeaderValue.offsetWidth;
+            els.boardLeaderValue.style.animation = 'leaderSwitch .28s ease';
+          }
+        }
+        if (els.boardLeaderNote) {
+          els.boardLeaderNote.textContent = leader
+            ? `${leader.topTeam?.flag || ''} ${leader.topTeam?.name || ''} + ${leader.bottomTeam?.flag || ''} ${leader.bottomTeam?.name || ''}`.trim()
+            : 'Best estimated draw odds will show here.';
+        }
+        if (els.boardLeaderCard) {
+          els.boardLeaderCard.classList.toggle('is-leader', Boolean(leader));
+          els.boardLeaderCard.style.animation = leader ? 'leaderGlow 2.4s ease-in-out infinite' : 'none';
+        }
+        if (els.boardLeaderBadge) {
+          els.boardLeaderBadge.textContent = leader ? '🔥 Best draw' : 'Waiting';
+          els.boardLeaderBadge.style.display = leader ? 'inline-flex' : 'none';
+        }
+        state.previousLeaderId = leaderId;
+        if (els.boardPaidValue) els.boardPaidValue.textContent = `${paidCount} / ${entries.length}`;
+        if (els.boardPaidNote) {
+          els.boardPaidNote.textContent = entries.length
+            ? `${Math.round((paidCount / entries.length) * 100)}% of visible entries are paid up.`
+            : 'No paid entries yet.';
+        }
+        if (els.boardAverageOddsValue) els.boardAverageOddsValue.textContent = formatOdds(averageOdds);
+        if (els.boardAverageOddsNote) {
+          const best = sortedByOdds[0] ? formatOdds(getEntryWinOdds(sortedByOdds[0])) : '0%';
+          const worst = sortedByOdds.length ? formatOdds(getEntryWinOdds(sortedByOdds[sortedByOdds.length - 1])) : '0%';
+          els.boardAverageOddsNote.textContent = entries.length ? `Best visible draw is ${best} and the lowest is ${worst}.` : 'This updates as teams are drawn.';
+        }
+        if (els.boardOpenSpotsValue) els.boardOpenSpotsValue.textContent = String(openSpots);
+        if (els.boardOpenSpotsNote) {
+          els.boardOpenSpotsNote.textContent = openSpots
+            ? `${openSpots} player spot${openSpots === 1 ? '' : 's'} still open in the tournament.`
+            : 'The tournament is full and now only the board keeps moving.';
+        }
+      }
+
+      function renderPublicBoard() {
+        if (!els.publicBoardList || !els.playerSearchMeta) return;
+
+        const filteredEntries = getFilteredBoardEntries();
+        const query = sanitizeText(els.playerSearch?.value || '', 80);
+        const hasQuery = Boolean(query.trim());
+
+        if (!state.entries.length) {
+          els.playerSearchMeta.textContent = 'No players yet.';
+          els.publicBoardList.classList.remove('search-active');
+          els.publicBoardList.innerHTML = '<div class="board-empty">No teams have been drawn yet.</div>';
+          updateBoardInsights([]);
+          return;
+        }
+
+        els.publicBoardList.classList.toggle('search-active', hasQuery);
+        updateBoardInsights(filteredEntries);
+
+        const filterLabel = (els.boardFilter?.value || 'all') === 'paid'
+          ? 'paid only'
+          : (els.boardFilter?.value || 'all') === 'unpaid'
+            ? 'unpaid only'
+            : 'all players';
+
+        els.playerSearchMeta.textContent = hasQuery
+          ? `${filteredEntries.length} result${filteredEntries.length === 1 ? '' : 's'} for “${query}”`
+          : `${filteredEntries.length} ${filterLabel} ranked by ${els.boardSort?.value === 'name' ? 'name' : els.boardSort?.value === 'newest' ? 'newest entry' : els.boardSort?.value === 'oldest' ? 'oldest entry' : 'estimated win chance'}`;
+
+        if (els.boardLastUpdated) {
+          els.boardLastUpdated.textContent = formatLastUpdated(state.lastRemoteSyncAt || Date.now());
+        }
+
+        if (!filteredEntries.length) {
+          els.publicBoardList.innerHTML = '<div class="board-empty">No players matched that search.</div>';
+          return;
+        }
+
+        if (hasQuery) {
+          els.publicBoardList.innerHTML = filteredEntries.map((entry, index) => renderFullBoardCard(entry, index)).join('');
+          return;
+        }
+
+        const yourEntries = [];
+        const otherEntries = [];
+
+        filteredEntries.forEach((entry) => {
+          const isYou = entry.deviceId && String(entry.deviceId) === String(state.deviceId);
+          if (isYou) yourEntries.push(entry);
+          else otherEntries.push(entry);
+        });
+
+        const validIds = new Set(otherEntries.map((entry, index) => getBoardEntryId(entry, index + yourEntries.length)));
+        if (state.selectedBoardEntryId && !validIds.has(state.selectedBoardEntryId)) {
+          state.selectedBoardEntryId = null;
+        }
+
+        const yourMarkup = yourEntries.map((entry, index) => renderFullBoardCard(entry, index)).join('');
+        const othersMarkup = otherEntries.length
+          ? otherEntries.map((entry, index) => renderCompactBoardRow(entry, index + yourEntries.length)).join('')
+          : '<div class="board-empty">Other players will appear here once more entries land.</div>';
+
+        els.publicBoardList.innerHTML = `${yourMarkup}${othersMarkup}`;
+      }
+
+      function renderEntries() {
+        refreshDeviceLinkState();
+        updateStats();
+        updateEntryAvailability();
+        updateRemainingTeamCopy();
+
+        if (!state.entries.length) {
+          els.entriesPanel.classList.add('hidden');
+          els.entriesList.innerHTML = '';
+          renderPublicBoard();
+          renderAdminList();
+          return;
+        }
+
+        els.entriesPanel.classList.remove('hidden');
+        const sortedEntries = state.entries.slice().sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+        els.entriesList.innerHTML = sortedEntries.map((entry, index) => `
+          <article class="entry-item">
+            <div>
+              <strong>${escapeHtml(entry.name)} (${escapeHtml(entry.nickname)})</strong>
+              <span>${escapeHtml(entry.topTeam.flag)} ${escapeHtml(entry.topTeam.name)} and ${escapeHtml(entry.bottomTeam.flag)} ${escapeHtml(entry.bottomTeam.name)}${entry.paid ? ' • Paid' : ' • Unpaid'}</span>
+            </div>
+            <div class="badge">#${state.entries.length - index}</div>
+          </article>
+        `).join('');
+
+        renderPublicBoard();
+        renderAdminList();
+      }
+
+      function renderAdminList() {
+        if (!state.adminOpen) {
+          els.adminPanel.classList.add('hidden');
+          return;
+        }
+
+        els.adminPanel.classList.remove('hidden');
+
+        const totalCount = state.entries.length;
+        const paidCount = getPaidCount();
+        const unpaidCount = Math.max(0, totalCount - paidCount);
+        const paidAmount = paidCount * ENTRY_PRICE_PER_TEAM * TEAMS_PER_PLAYER;
+
+        if (els.adminTotalCount) els.adminTotalCount.textContent = String(totalCount);
+        if (els.adminPaidCount) els.adminPaidCount.textContent = String(paidCount);
+        if (els.adminUnpaidCount) els.adminUnpaidCount.textContent = String(unpaidCount);
+        if (els.adminPaidAmount) els.adminPaidAmount.textContent = String(paidAmount);
+
+        if (!state.entries.length) {
+          els.adminMeta.textContent = '0 entries';
+          els.adminList.innerHTML = '<article class="entry-item"><div><strong>No players yet</strong><span>Add an entry first.</span></div></article>';
+          return;
+        }
+
+        const query = sanitizeText(els.adminSearch?.value || '', 80).toLowerCase();
+        const filterValue = els.adminFilter?.value || 'all';
+
+        const sortedEntries = state.entries
+          .slice()
+          .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+          .filter((entry) => {
+            if (filterValue === 'paid' && !entry.paid) return false;
+            if (filterValue === 'unpaid' && entry.paid) return false;
+            if (!query) return true;
+            const haystack = [entry.name, entry.nickname, entry.topTeam?.name, entry.bottomTeam?.name].join(' ').toLowerCase();
+            return haystack.includes(query);
+          });
+
+        els.adminMeta.textContent = `${sortedEntries.length} visible / ${state.entries.length} total`;
+
+        els.adminList.innerHTML = sortedEntries.map((entry, index) => `
+          <article class="entry-item">
+            <div>
+              <strong>${escapeHtml(entry.name)} (${escapeHtml(entry.nickname)})</strong>
+              <span>${escapeHtml(entry.topTeam.flag || '')} ${escapeHtml(entry.topTeam.name)} + ${escapeHtml(entry.bottomTeam.flag || '')} ${escapeHtml(entry.bottomTeam.name)} • ${entry.paid ? 'Paid' : 'Unpaid'} • ${escapeHtml(formatLastUpdated(entry.createdAt).replace('Last updated: ', ''))}</span>
+            </div>
+            <div class="entry-admin-actions">
+              <button class="btn ${entry.paid ? 'ghost' : 'primary'}" type="button" data-toggle-paid="${escapeHtml(entry.id || String(index))}">
+                ${entry.paid ? 'Mark Unpaid' : 'Mark Paid'}
+              </button>
+              <button class="btn ghost" type="button" data-edit-entry="${escapeHtml(entry.id || String(index))}">Edit</button>
+              <button class="btn danger" type="button" data-delete-entry="${escapeHtml(entry.id || String(index))}">Remove</button>
+            </div>
+          </article>
+        `).join('');
+      }
+
+      function setFormError(message) {
+        els.formError.textContent = message;
+      }
+
+      function resetDrawFlow(keepNames = false) {
+        state.topTeam = null;
+        state.bottomTeam = null;
+        state.isTopDone = false;
+        state.isBottomDone = false;
+        state.isSpinning = false;
+
+        if (!keepNames) {
+          state.name = '';
+          state.nickname = '';
+          els.fullName.value = '';
+          els.nickName.value = '';
+        }
+
+        setFormError('');
+        els.topWheel.style.transform = 'rotate(0deg)';
+        els.bottomWheel.style.transform = 'rotate(0deg)';
+        els.topWheel.dataset.rotation = '0';
+        els.bottomWheel.dataset.rotation = '0';
+        els.topResult.textContent = 'Your Top 24 team will appear here';
+        els.bottomResult.textContent = 'Your Bottom 24 team will appear here';
+        els.finalTopTeam.textContent = '-';
+        els.finalBottomTeam.textContent = '-';
+        els.resultSummary.textContent = 'Spin both wheels to reveal your teams.';
+        els.spinTopBtn.disabled = false;
+        els.spinBottomBtn.disabled = true;
+        els.entryStep.classList.remove('hidden');
+        els.spinStep.classList.add('hidden');
+        els.resultStep.classList.add('hidden');
+        updateEntryAvailability();
+        updateRemainingTeamCopy();
+      }
+
+      function normalizeIdentity(value) {
+        return sanitizeText(value, 80).toLowerCase();
+      }
+
+      function hasDuplicateEntry(nameValue, nickValue) {
+        const normalizedName = normalizeIdentity(nameValue);
+        const normalizedNickname = normalizeIdentity(nickValue);
+
+        return state.entries.some(entry =>
+          normalizeIdentity(entry.name) === normalizedName ||
+          normalizeIdentity(entry.nickname) === normalizedNickname
+        );
+      }
+
+      function hasDuplicateEntryExcept(nameValue, nickValue, entryId) {
+        const normalizedName = normalizeIdentity(nameValue);
+        const normalizedNickname = normalizeIdentity(nickValue);
+
+        return state.entries.some(entry =>
+          String(entry.id) !== String(entryId) && (
+            normalizeIdentity(entry.name) === normalizedName ||
+            normalizeIdentity(entry.nickname) === normalizedNickname
+          )
+        );
+      }
+
+      async function hasRemoteDuplicateEntry(nameValue, nickValue, excludeEntryId = null) {
+        if (!state.useRemote) return false;
+
+        const { data, error } = await supabase
+          .from('players')
+          .select('id,name,nickname')
+          .or(`name.ilike.${nameValue},nickname.ilike.${nickValue}`)
+          .limit(10);
+
+        if (error) {
+          console.error('Supabase duplicate check failed:', error);
+          return false;
+        }
+
+        const normalizedName = normalizeIdentity(nameValue);
+        const normalizedNickname = normalizeIdentity(nickValue);
+
+        return (data || []).some(row =>
+          String(row.id) !== String(excludeEntryId) && (
+            normalizeIdentity(row.name) === normalizedName ||
+            normalizeIdentity(row.nickname) === normalizedNickname
+          )
+        );
+      }
+
+      async function getRemotePlayerCount() {
+        if (!state.useRemote) return state.entries.length;
+
+        const { count, error } = await supabase
+          .from('players')
+          .select('id', { count: 'exact', head: true });
+
+        if (error) {
+          console.error('Supabase count check failed:', error);
+          return null;
+        }
+
+        return count ?? 0;
+      }
+
+      function validateEntry() {
+        const nameValue = sanitizeText(els.fullName.value, 40);
+        const nickValue = sanitizeText(els.nickName.value, 24);
+
+        if (state.entries.length >= MAX_PLAYERS) {
+          setFormError('All 24 spots are filled.');
+          showToast('All spots are currently filled.');
+          return null;
+        }
+
+        if (!nameValue || !nickValue) {
+          setFormError('Enter both your name and nickname first.');
+          return null;
+        }
+
+        if (nameValue.length < 2 || nickValue.length < 2) {
+          setFormError('Name and nickname must be at least 2 characters long.');
+          return null;
+        }
+
+        if (state.linkedEntry) {
+          setFormError('This device already has a saved draw. Use View My Draw instead.');
+          showLinkedEntry(state.linkedEntry);
+          return null;
+        }
+
+        if (hasDuplicateEntry(nameValue, nickValue)) {
+          setFormError('That name or nickname is already in the draw.');
+          return null;
+        }
+
+        setFormError('');
+        return { nameValue, nickValue };
+      }
+
+      async function showSpinStep() {
+        const values = validateEntry();
+        if (!values) return;
+
+        if (state.useRemote) {
+          setButtonBusy(els.startSpinsBtn, true, 'Checking...');
+          setSyncStatus('Checking for duplicate entries...', '');
+          const remoteDuplicate = await hasRemoteDuplicateEntry(values.nameValue, values.nickValue);
+          if (remoteDuplicate) {
+            setFormError('That name or nickname is already in the draw.');
+            setSyncStatus('Live sync connected.', 'ok');
+            setButtonBusy(els.startSpinsBtn, false);
+            return;
+          }
+
+          const remoteCount = await getRemotePlayerCount();
+          if (remoteCount !== null && remoteCount >= MAX_PLAYERS) {
+            await fetchRemoteEntries({ silent: true });
+            setFormError('Tournament full. No more entries can be added right now.');
+            setSyncStatus('Tournament full.', 'warn');
+            showToast('Tournament is full.');
+            setButtonBusy(els.startSpinsBtn, false);
+            return;
+          }
+
+          setSyncStatus('Live sync connected.', 'ok');
+          setButtonBusy(els.startSpinsBtn, false);
+        }
+
+        state.name = values.nameValue;
+        state.nickname = values.nickValue;
+        els.fullName.value = values.nameValue;
+        els.nickName.value = values.nickValue;
+        els.spinIntro.textContent = `${state.name}, spin the top wheel first, then the bottom wheel.`;
+        els.entryStep.classList.add('hidden');
+        els.spinStep.classList.remove('hidden');
+      }
+
+      async function saveEntry(entry) {
+        if (state.entries.length >= MAX_PLAYERS) {
+          setFormError('Tournament full. No more entries can be added right now.');
+          showToast('Tournament is full.');
+          renderEntries();
+          return false;
+        }
+
+        if (state.useRemote) {
+          const remoteCount = await getRemotePlayerCount();
+          if (remoteCount !== null && remoteCount >= MAX_PLAYERS) {
+            await fetchRemoteEntries({ silent: true });
+            setFormError('Tournament full. No more entries can be added right now.');
+            setSyncStatus('Tournament full.', 'warn');
+            showToast('Tournament is full.');
+            return false;
+          }
+        }
+
+        state.entries.push(entry);
+        persistLocalEntries();
+        renderEntries();
+
+        if (!state.useRemote) return true;
+
+        const payload = {
+          name: entry.name,
+          nickname: entry.nickname,
+          top_team: entry.topTeam.name,
+          bottom_team: entry.bottomTeam.name,
+          paid: entry.paid
+        };
+
+        if (state.remoteSupportsDeviceId) {
+          payload.device_id = entry.deviceId;
+        }
+
+        const remoteDuplicate = await hasRemoteDuplicateEntry(entry.name, entry.nickname);
+        if (remoteDuplicate) {
+          state.entries = state.entries.filter(item => item.id !== entry.id);
+          persistLocalEntries();
+          renderEntries();
+          setFormError('That name or nickname is already in the draw.');
+          setSyncStatus('Duplicate blocked by live check.', 'warn');
+          showToast('Duplicate entry blocked.');
+          return false;
+        }
+
+        let { error } = await supabase.from('players').insert([payload]);
+
+        if (error && state.remoteSupportsDeviceId && error.code === 'PGRST204' && /device_id/i.test(error.message || '')) {
+          console.warn('device_id column missing in Supabase. Saving without remote device link.');
+          state.remoteSupportsDeviceId = false;
+          delete payload.device_id;
+          const retry = await supabase.from('players').insert([payload]);
+          error = retry.error || null;
+
+          if (!error) {
+            setSyncStatus('Saved live, but add device_id to Supabase to keep return visits linked.', 'warn');
+            showToast('Saved. Add device_id in Supabase for return visits.');
+            return true;
+          }
+        }
+
+        if (error) {
+          console.error('Supabase insert failed:', error);
+
+          if (error.code === '23505') {
+            const message = String(error.message || '').toLowerCase();
+            const duplicateTeamConflict = message.includes('top_team') || message.includes('bottom_team');
+
+            if (duplicateTeamConflict) {
+              await fetchRemoteEntries({ silent: true });
+
+              const replacementTop = getAvailableTeams('top', { excludeNames: [entry.topTeam?.name] })[0] || null;
+              const replacementBottom = getAvailableTeams('bottom', { excludeNames: [entry.bottomTeam?.name] })[0] || null;
+
+              if (replacementTop && replacementBottom) {
+                const retryEntry = {
+                  ...entry,
+                  topTeam: { ...replacementTop },
+                  bottomTeam: { ...replacementBottom }
+                };
+
+                state.entries = state.entries.filter(item => item.id !== entry.id);
+                state.entries.push(retryEntry);
+                persistLocalEntries();
+
+                els.finalTopTeam.textContent = `${retryEntry.topTeam.flag} ${retryEntry.topTeam.name}`;
+                els.finalBottomTeam.textContent = `${retryEntry.bottomTeam.flag} ${retryEntry.bottomTeam.name}`;
+                els.finalWinOdds.textContent = formatOdds(getEntryWinOdds(retryEntry));
+                els.finalWinOddsCopy.textContent = getOddsSummary(retryEntry);
+                els.resultSummary.textContent = `${retryEntry.name} (${retryEntry.nickname}) drew ${retryEntry.topTeam.name} and ${retryEntry.bottomTeam.name}.`;
+
+                const retryPayload = {
+                  name: retryEntry.name,
+                  nickname: retryEntry.nickname,
+                  top_team: retryEntry.topTeam.name,
+                  bottom_team: retryEntry.bottomTeam.name,
+                  paid: retryEntry.paid
+                };
+
+                if (state.remoteSupportsDeviceId) {
+                  retryPayload.device_id = retryEntry.deviceId;
+                }
+
+                const retryResult = await supabase.from('players').insert([retryPayload]);
+                if (!retryResult.error) {
+                  renderEntries();
+                  setSyncStatus('Live sync connected.', 'ok');
+                  showToast('Your teams were updated live to avoid a duplicate.');
+                  return true;
+                }
+              }
+
+              state.entries = state.entries.filter(item => item.id !== entry.id);
+              persistLocalEntries();
+              renderEntries();
+              setFormError('Those teams were taken at the same time by someone else. The live board updated first, so please spin again for a fresh pair.');
+              setSyncStatus('Duplicate team blocked by Supabase.', 'warn');
+              showToast('Those teams were taken live by someone else. Spin again for a fresh pair.');
+              return false;
+            }
+
+            state.entries = state.entries.filter(item => item.id !== entry.id);
+            persistLocalEntries();
+            renderEntries();
+            setFormError('That name or nickname is already in the draw.');
+            setSyncStatus('Duplicate blocked by Supabase.', 'warn');
+            showToast('Duplicate entry blocked.');
+            return false;
+          }
+
+          setSyncStatus('Saved on this device only. Supabase insert failed.', 'warn');
+          showToast('Saved locally. Supabase insert failed.');
+          return false;
+        }
+
+        setSyncStatus('Live sync connected.', 'ok');
+        return true;
+      }
+
+      async function finishEntry() {
+        if (!state.isTopDone || !state.isBottomDone || !state.topTeam || !state.bottomTeam) return;
+
+        setButtonBusy(els.doneBtn, true, 'Saving...');
+        els.finalTopTeam.textContent = `${state.topTeam.flag} ${state.topTeam.name}`;
+        els.finalBottomTeam.textContent = `${state.bottomTeam.flag} ${state.bottomTeam.name}`;
+        const pendingEntry = {
+          name: state.name,
+          nickname: state.nickname,
+          topTeam: { ...state.topTeam },
+          bottomTeam: { ...state.bottomTeam }
+        };
+        els.finalWinOdds.textContent = formatOdds(getEntryWinOdds(pendingEntry));
+        els.finalWinOddsCopy.textContent = getOddsSummary(pendingEntry);
+        els.resultSummary.textContent = `${state.name} (${state.nickname}) drew ${state.topTeam.name} and ${state.bottomTeam.name}.`;
+        els.resultStep.classList.remove('hidden');
+
+        const entry = {
+          id: window.crypto.randomUUID(),
+          deviceId: state.deviceId,
+          name: state.name,
+          nickname: state.nickname,
+          topTeam: { ...state.topTeam },
+          bottomTeam: { ...state.bottomTeam },
+          paid: false,
+          createdAt: new Date().toISOString()
+        };
+
+        const saved = await saveEntry(entry);
+        setButtonBusy(els.doneBtn, false);
+        if (saved) {
+          showToast('Draw saved successfully.');
+          els.resultStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+          els.resultStep.classList.add('hidden');
+          els.spinStep.classList.add('hidden');
+          els.entryStep.classList.remove('hidden');
+        }
+      }
+
+
+      function buildResultText(entry = null) {
+        const source = entry || (state.name && state.nickname && state.topTeam && state.bottomTeam ? {
+          name: state.name,
+          nickname: state.nickname,
+          topTeam: state.topTeam,
+          bottomTeam: state.bottomTeam
+        } : null);
+
+        if (!source || !source.topTeam || !source.bottomTeam) return '';
+        return `${source.name} (@${source.nickname}) drew ${source.topTeam.flag} ${source.topTeam.name} and ${source.bottomTeam.flag} ${source.bottomTeam.name}. Estimated win chance: ${formatOdds(getEntryWinOdds(source))}.`;
+      }
+
+      async function copyResultToClipboard() {
+        const resultText = buildResultText(state.linkedEntry || {
+          name: state.name,
+          nickname: state.nickname,
+          topTeam: state.topTeam,
+          bottomTeam: state.bottomTeam
+        });
+
+        if (!resultText) {
+          showToast('No result ready to copy yet.');
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(resultText);
+          showToast('Result copied.');
+        } catch {
+          showToast('Could not copy result on this device.');
+        }
+      }
+
+      async function shareResult() {
+        const resultText = buildResultText(state.linkedEntry || {
+          name: state.name,
+          nickname: state.nickname,
+          topTeam: state.topTeam,
+          bottomTeam: state.bottomTeam
+        });
+
+        if (!resultText) {
+          showToast('No result ready to share yet.');
+          return;
+        }
+
+        try {
+          if (navigator.share) {
+            await navigator.share({ title: 'World Cup Draw', text: resultText });
+            showToast('Result shared.');
+          } else {
+            await copyResultToClipboard();
+          }
+        } catch {
+          showToast('Share cancelled.');
+        }
+      }
+
+      function exportEntriesCsv() {
+        if (!state.entries.length) {
+          showToast('No entries to export.');
+          return;
+        }
+
+        const rows = [
+          ['Name', 'Nickname', 'Top Team', 'Bottom Team', 'Paid', 'Created At']
+        ].concat(
+          state.entries.slice().sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0)).map((entry) => [
+            entry.name,
+            entry.nickname,
+            entry.topTeam?.name || '',
+            entry.bottomTeam?.name || '',
+            entry.paid ? 'Yes' : 'No',
+            entry.createdAt || ''
+          ])
+        );
+
+        const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'world-cup-draw-entries.csv';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        showToast('CSV exported.');
+      }
+
+      function setupInstallPrompt() {
+        window.addEventListener('beforeinstallprompt', (event) => {
+          event.preventDefault();
+          state.deferredInstallPrompt = event;
+          els.installAppBtn?.classList.remove('hidden');
+        });
+
+        els.installAppBtn?.addEventListener('click', async () => {
+          if (!state.deferredInstallPrompt) return;
+          state.deferredInstallPrompt.prompt();
+          await state.deferredInstallPrompt.userChoice.catch(() => null);
+          state.deferredInstallPrompt = null;
+          els.installAppBtn?.classList.add('hidden');
+        });
+      }
+
+      function handleSpin({ button, resultEl, wheelEl, teams, stateKeyDone, stateKeyTeam, nextButton }) {
+        if (state.isSpinning || button.disabled) return;
+
+        state.isSpinning = true;
+        button.disabled = true;
+        if (nextButton) nextButton.disabled = true;
+
+        const selectedIndex = randomIndex(teams.length);
+        const selectedTeam = teams[selectedIndex];
+        resultEl.textContent = 'Spinning...';
+        resultEl.classList.add('is-pending');
+        spinWheel(wheelEl, teams.length, selectedIndex);
+
+        window.setTimeout(async () => {
+          state[stateKeyTeam] = { ...selectedTeam };
+          state[stateKeyDone] = true;
+          resultEl.textContent = `${selectedTeam.flag} ${selectedTeam.name}`;
+          resultEl.classList.remove('is-pending');
+          state.isSpinning = false;
+          updateRemainingTeamCopy();
+
+          if (nextButton && !state.isBottomDone) {
+            nextButton.disabled = false;
+            nextButton.focus();
+          }
+
+          if (state.isTopDone && state.isBottomDone) {
+            await finishEntry();
+          }
+        }, SPIN_DURATION);
+      }
+
+      function trapFocus(event) {
+        const overlay = getOpenOverlay();
+        if (!overlay || event.key !== 'Tab') return;
+
+        const focusable = overlay.querySelectorAll('button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])');
+        if (!focusable.length) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+
+      function getRowCreatedAt(row) {
+        return row.created_at || row.createdAt || row['created at'] || row.inserted_at || row.updated_at || null;
+      }
+
+      function findFlagByTeamName(teamName) {
+        if (!teamName) return '';
+        const match = [...TOP_TEAMS, ...BOTTOM_TEAMS].find(team => team.name === teamName);
+        return match ? match.flag : '';
+      }
+
+      function mapRemoteEntry(row, index = 0) {
+        const topName = row.top_team || row.topTeam || 'Unknown';
+        const bottomName = row.bottom_team || row.bottomTeam || 'Unknown';
+
+        return {
+          id: row.id || `${row.name || 'player'}-${row.nickname || index}-${index}`,
+          deviceId: row.device_id || row.deviceId || null,
+          name: row.name || 'Unknown',
+          nickname: row.nickname || 'Unknown',
+          topTeam: { name: topName, flag: row.top_flag || row.topFlag || findFlagByTeamName(topName) },
+          bottomTeam: { name: bottomName, flag: row.bottom_flag || row.bottomFlag || findFlagByTeamName(bottomName) },
+          paid: Boolean(row.paid),
+          createdAt: getRowCreatedAt(row) || new Date().toISOString()
+        };
+      }
+
+      async function fetchRemoteEntries(options = {}) {
+        const { silent = false } = options;
+
+        if (!state.useRemote) {
+          setSyncStatus('Supabase not available. Using this device only.', 'warn');
+          renderEntries();
+          return;
+        }
+
+        if (state.isFetchingRemote) return;
+        state.isFetchingRemote = true;
+        if (!silent) setSyncStatus('Syncing live entries...', '');
+
+        const { data, error } = await supabase
+          .from('players')
+          .select('*');
+
+        state.isFetchingRemote = false;
+
+        if (error) {
+          console.error('Supabase fetch failed:', error);
+          setSyncStatus('Could not load live entries. Using local cache.', 'warn');
+          renderEntries();
+          return;
+        }
+
+        state.entries = (data || [])
+          .map((row, index) => mapRemoteEntry(row, index))
+          .sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+        state.lastRemoteSyncAt = new Date().toISOString();
+        persistLocalEntries();
+        renderEntries();
+        if (state.linkedEntry && els.enterOverlay.classList.contains('show') && !state.adminOpen) {
+          showLinkedEntry(state.linkedEntry);
+        }
+        setSyncStatus('Live sync connected.', 'ok');
+      }
+
+      async function callSecureAdmin(path, body) {
+        const response = await fetch(`${ADMIN_API_BASE.replace(/\/$/, '')}/${path.replace(/^\//, '')}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        let payload = null;
+        try {
+          payload = await response.json();
+        } catch {
+          payload = null;
+        }
+
+        if (!response.ok) {
+          throw new Error(payload?.error || `Secure admin request failed (${response.status}).`);
+        }
+
+        return payload;
+      }
+
+      async function updatePaidStatus(entryId, paid) {
+        if (!ensureAdminAccess('update payment status')) return;
+
+        const entry = state.entries.find(item => String(item.id) === String(entryId));
+        if (!entry) return;
+
+        entry.paid = paid;
+        persistLocalEntries();
+        renderEntries();
+
+        if (!state.useRemote) {
+          showToast('Payment status updated on this device.');
+          return;
+        }
+
+        let error = null;
+        if (state.secureAdminEnabled) {
+          try {
+            await callSecureAdmin('players/update-paid', { id: entryId, paid });
+          } catch (secureError) {
+            error = secureError;
+          }
+        } else {
+          const result = await supabase.from('players').update({ paid }).eq('id', entryId);
+          error = result.error || null;
+        }
+        if (error) {
+          console.error(error);
+          showToast(state.secureAdminEnabled ? 'Payment update failed in secure admin mode.' : 'Payment update failed in Supabase.');
+          setSyncStatus('Live sync issue while updating payment.', 'warn');
+          return;
+        }
+
+        showToast('Payment updated.');
+      }
+
+      async function editEntryDetails(entryId) {
+        if (!ensureAdminAccess('edit a player')) return;
+
+        const entry = state.entries.find(item => String(item.id) === String(entryId));
+        if (!entry) return;
+
+        const nextName = sanitizeText(prompt('Edit full name', entry.name) || '', 40);
+        if (!nextName) return;
+
+        const nextNickname = sanitizeText(prompt('Edit nickname', entry.nickname) || '', 24);
+        if (!nextNickname) return;
+
+        if (nextName.length < 2 || nextNickname.length < 2) {
+          showToast('Name and nickname must be at least 2 characters.');
+          return;
+        }
+
+        if (hasDuplicateEntryExcept(nextName, nextNickname, entryId)) {
+          showToast('That name or nickname is already in the draw.');
+          return;
+        }
+
+        if (state.useRemote) {
+          const remoteDuplicate = await hasRemoteDuplicateEntry(nextName, nextNickname, entryId);
+          if (remoteDuplicate) {
+            showToast('That name or nickname is already in the draw.');
+            return;
+          }
+        }
+
+        const previousName = entry.name;
+        const previousNickname = entry.nickname;
+        entry.name = nextName;
+        entry.nickname = nextNickname;
+        persistLocalEntries();
+        renderEntries();
+
+        if (!state.useRemote) {
+          showToast('Player updated on this device.');
+          return;
+        }
+
+        let error = null;
+        if (state.secureAdminEnabled) {
+          try {
+            await callSecureAdmin('players/edit', { id: entryId, name: nextName, nickname: nextNickname });
+          } catch (secureError) {
+            error = secureError;
+          }
+        } else {
+          const result = await supabase
+            .from('players')
+            .update({ name: nextName, nickname: nextNickname })
+            .eq('id', entryId);
+          error = result.error || null;
+        }
+
+        if (error) {
+          console.error(error);
+          entry.name = previousName;
+          entry.nickname = previousNickname;
+          persistLocalEntries();
+          renderEntries();
+          showToast('Could not update player in Supabase.');
+          setSyncStatus('Live sync issue while editing player.', 'warn');
+          return;
+        }
+
+        showToast('Player details updated.');
+      }
+
+      async function removeEntry(entryId) {
+        if (!ensureAdminAccess('remove a player')) return;
+
+        const entry = state.entries.find(item => String(item.id) === String(entryId));
+        if (!entry) return;
+
+        const confirmed = confirm(`Remove ${entry.name} (${entry.nickname}) from the tournament?`);
+        if (!confirmed) return;
+
+        const previousEntries = state.entries.slice();
+        state.entries = state.entries.filter(item => String(item.id) !== String(entryId));
+        persistLocalEntries();
+        renderEntries();
+
+        if (!state.useRemote) {
+          showToast('Player removed on this device.');
+          return;
+        }
+
+        let error = null;
+        if (state.secureAdminEnabled) {
+          try {
+            await callSecureAdmin('players/delete', { id: entryId });
+          } catch (secureError) {
+            error = secureError;
+          }
+        } else {
+          const result = await supabase.from('players').delete().eq('id', entryId);
+          error = result.error || null;
+        }
+        if (error) {
+          console.error(error);
+          state.entries = previousEntries;
+          persistLocalEntries();
+          renderEntries();
+          showToast(state.secureAdminEnabled ? 'Could not remove player in secure admin mode.' : 'Could not remove player in Supabase.');
+          setSyncStatus('Live sync issue while removing player.', 'warn');
+          return;
+        }
+
+        showToast('Player removed.');
+      }
+
+      async function resetTournament() {
+        if (!ensureAdminAccess('reset the full tournament', { reauth: true })) return;
+
+        const confirmed = confirm('Reset the full tournament? This will remove every player.');
+        if (!confirmed) return;
+        setButtonBusy(els.resetTournamentBtn, true, 'Resetting...');
+
+        const previousEntries = state.entries.slice();
+        state.entries = [];
+        persistLocalEntries();
+        renderEntries();
+        resetDrawFlow();
+
+        if (!state.useRemote) {
+          setButtonBusy(els.resetTournamentBtn, false);
+          showToast('Tournament reset on this device.');
+          return;
+        }
+
+        let error = null;
+        if (state.secureAdminEnabled) {
+          try {
+            await callSecureAdmin('players/reset', {});
+          } catch (secureError) {
+            error = secureError;
+          }
+        } else {
+          const result = await supabase.from('players').delete().neq('id', 0);
+          error = result.error || null;
+        }
+        if (error) {
+          console.error(error);
+          state.entries = previousEntries;
+          persistLocalEntries();
+          renderEntries();
+          showToast(state.secureAdminEnabled ? 'Could not reset tournament in secure admin mode.' : 'Could not reset tournament in Supabase.');
+          setSyncStatus('Live sync issue while resetting tournament.', 'warn');
+          setButtonBusy(els.resetTournamentBtn, false);
+          return;
+        }
+
+        setButtonBusy(els.resetTournamentBtn, false);
+        showToast('Tournament reset.');
+      }
+
+      function subscribeToRealtime() {
+        if (!state.useRemote) return;
+
+        if (state.syncChannel) {
+          supabase.removeChannel(state.syncChannel);
+        }
+
+        state.syncChannel = supabase
+          .channel('players-live')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, () => {
+            queueRemoteRefresh(150);
+          })
+          .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+              setSyncStatus('Live sync connected.', 'ok');
+              queueRemoteRefresh(0);
+            } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+              setSyncStatus('Live sync disconnected. Reconnecting...', 'warn');
+            } else if (status === 'CLOSED') {
+              setSyncStatus('Live sync closed. Refresh page if entries stop updating.', 'warn');
+            }
+          });
+      }
+
+      function toggleAdminPanel(forceOpen = null) {
+        if (forceOpen !== false && !ensureAdminAccess('open admin')) {
+          return;
+        }
+
+        state.adminOpen = forceOpen === null ? !state.adminOpen : forceOpen;
+
+        if (state.adminOpen) {
+          els.entryStep.classList.add('hidden');
+          els.spinStep.classList.add('hidden');
+          els.resultStep.classList.add('hidden');
+          els.entriesPanel.classList.add('hidden');
+        } else {
+          els.entryStep.classList.remove('hidden');
+          renderEntries();
+        }
+
+        renderAdminList();
+      }
+
+      function resetLocalCache() {
+        setButtonBusy(els.resetLocalBtn, true, 'Clearing...');
+        localStorage.removeItem(STORAGE_KEY);
+        if (!state.useRemote) {
+          state.entries = [];
+          renderEntries();
+        }
+        setButtonBusy(els.resetLocalBtn, false);
+        showToast('Local cache cleared.');
+      }
+
+
+      function handleAdminActivity() {
+        if (!state.adminAuthenticated) return;
+        if (!isAdminSessionValid()) return;
+        touchAdminSession();
+      }
+
+      els.howItWorksBtn.addEventListener('click', () => openOverlay(els.howOverlay, els.closeOverlayBtn));
+      els.enterDrawBtn.addEventListener('click', () => {
+        if (state.linkedEntry) {
+          showLinkedEntry(state.linkedEntry, { openIfNeeded: true });
+          return;
+        }
+        if (isTournamentFull()) {
+          showToast('Tournament is full.');
+          return;
+        }
+        resetDrawFlow();
+        openOverlay(els.enterOverlay, els.fullName);
+      });
+
+      els.closeOverlayBtn.addEventListener('click', () => closeOverlay(els.howOverlay));
+      els.modalEnterBtn.addEventListener('click', () => {
+        closeOverlay(els.howOverlay);
+        if (state.linkedEntry) {
+          showLinkedEntry(state.linkedEntry, { openIfNeeded: true });
+          return;
+        }
+        if (isTournamentFull()) {
+          showToast('Tournament is full.');
+          return;
+        }
+        resetDrawFlow();
+        openOverlay(els.enterOverlay, els.fullName);
+      });
+
+      els.closeEnterBtn.addEventListener('click', () => closeOverlay(els.enterOverlay));
+      els.doneBtn.addEventListener('click', () => closeOverlay(els.enterOverlay));
+      els.startSpinsBtn.addEventListener('click', showSpinStep);
+      els.adminBtn.addEventListener('click', () => {
+        openOverlay(els.enterOverlay, els.closeEnterBtn);
+        toggleAdminPanel(true);
+      });
+      els.closeAdminBtn.addEventListener('click', () => {
+        toggleAdminPanel(false);
+      });
+      els.resetTournamentBtn.addEventListener('click', resetTournament);
+      els.resetLocalBtn.addEventListener('click', resetLocalCache);
+      if (els.logoutAdminBtn) {
+        els.logoutAdminBtn.addEventListener('click', () => {
+          clearAdminSession(true);
+          closeOverlay(els.enterOverlay);
+          showToast('Admin logged out.');
+        });
+      }
+
+      els.fullName.addEventListener('input', () => setFormError(''));
+      els.nickName.addEventListener('input', () => setFormError(''));
+      els.nickName.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          showSpinStep();
+        }
+      });
+
+      if (els.playerSearch) {
+        els.playerSearch.addEventListener('input', () => {
+          state.selectedBoardEntryId = null;
+          renderPublicBoard();
+        });
+      }
+
+      [els.boardSort, els.boardFilter].forEach((control) => {
+        control?.addEventListener('change', () => {
+          state.selectedBoardEntryId = null;
+          renderPublicBoard();
+        });
+      });
+
+      els.copyResultBtn?.addEventListener('click', copyResultToClipboard);
+      els.shareResultBtn?.addEventListener('click', shareResult);
+      els.exportCsvBtn?.addEventListener('click', exportEntriesCsv);
+      els.adminSearch?.addEventListener('input', renderAdminList);
+      els.adminFilter?.addEventListener('change', renderAdminList);
+
+      document.addEventListener('click', (event) => {
+        const trackerToggle = event.target.closest('[data-tracker-toggle]');
+        if (trackerToggle) {
+          toggleTrackerSection(trackerToggle.getAttribute('data-tracker-toggle'));
+        }
+      });
+
+      if (els.publicBoardList) {
+        els.publicBoardList.addEventListener('click', (event) => {
+          const toggle = event.target.closest('[data-board-entry-toggle]');
+          if (!toggle) return;
+          const entryId = String(toggle.dataset.boardEntryToggle || '');
+          state.selectedBoardEntryId = state.selectedBoardEntryId === entryId ? null : entryId;
+          renderPublicBoard();
+        });
+      }
+
+      els.spinTopBtn.addEventListener('click', () => {
+        const availableTopTeams = getAvailableTeams('top');
+        if (!availableTopTeams.length) {
+          showToast('All top teams have already been taken.');
+          return;
+        }
+
+        handleSpin({
+          button: els.spinTopBtn,
+          resultEl: els.topResult,
+          wheelEl: els.topWheel,
+          teams: availableTopTeams,
+          stateKeyDone: 'isTopDone',
+          stateKeyTeam: 'topTeam',
+          nextButton: els.spinBottomBtn
+        });
+      });
+
+      els.spinBottomBtn.addEventListener('click', () => {
+        const availableBottomTeams = getAvailableTeams('bottom');
+        if (!availableBottomTeams.length) {
+          showToast('All bottom teams have already been taken.');
+          return;
+        }
+
+        handleSpin({
+          button: els.spinBottomBtn,
+          resultEl: els.bottomResult,
+          wheelEl: els.bottomWheel,
+          teams: availableBottomTeams,
+          stateKeyDone: 'isBottomDone',
+          stateKeyTeam: 'bottomTeam'
+        });
+      });
+
+      els.adminList.addEventListener('click', (event) => {
+        const paidButton = event.target.closest('[data-toggle-paid]');
+        if (paidButton) {
+          const entryId = paidButton.getAttribute('data-toggle-paid');
+          const entry = state.entries.find(item => String(item.id) === String(entryId));
+          if (!entry) return;
+          updatePaidStatus(entryId, !entry.paid);
+          return;
+        }
+
+        const editButton = event.target.closest('[data-edit-entry]');
+        if (editButton) {
+          editEntryDetails(editButton.getAttribute('data-edit-entry'));
+          return;
+        }
+
+        const deleteButton = event.target.closest('[data-delete-entry]');
+        if (deleteButton) {
+          const entryId = deleteButton.getAttribute('data-delete-entry');
+          const entry = state.entries.find(item => String(item.id) === String(entryId));
+          if (entry && confirm(`Remove ${entry.name} (${entry.nickname}) from the draw?`)) {
+            removeEntry(entryId);
+          }
+        }
+      });
+
+      [els.howOverlay, els.enterOverlay].forEach((overlay) => {
+        overlay.addEventListener('click', (event) => {
+          if (event.target === overlay) closeOverlay(overlay);
+        });
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          const open = getOpenOverlay();
+          if (open) closeOverlay(open);
+        }
+        trapFocus(event);
+      });
+
+      ['click', 'keydown', 'mousemove', 'touchstart'].forEach((eventName) => {
+        document.addEventListener(eventName, handleAdminActivity, { passive: true });
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          if (state.adminAuthenticated && !isAdminSessionValid()) return;
+          queueRemoteRefresh(0);
+        }
+      });
+
+      window.addEventListener('online', () => {
+        setSyncStatus('Back online. Reconnecting live sync...', '');
+        subscribeToRealtime();
+        queueRemoteRefresh(0);
+      });
+
+      setupInstallPrompt();
+      renderEntries();
+      fetchRemoteEntries();
+      subscribeToRealtime();
+    })();
+  </script>
+</body>
+</html>
